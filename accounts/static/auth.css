@@ -1,0 +1,81 @@
+:root {
+  color-scheme: light, dark; /* both supported */
+}
+
+main {
+    min-height: 100%;
+    display: grid;
+    place-items: center;
+}
+
+.auth-wrapper {
+    width: 350px;
+    padding: 20px;
+    background-color: #FFF;
+}
+
+
+.auth-info {
+    display: flex; 
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.auth-info p {
+    position: relative;
+    cursor: pointer;
+    margin-left: 20px;
+    font-size: 14px;
+    top: 3px;
+}
+
+.auth-info p:hover {
+    color: #4835d4;
+}
+
+
+.input-field-wrapper {
+    position: relative;
+    margin: 5px 0;
+    margin-bottom: 10px;
+}
+
+.input-field-wrapper input, select {
+    width: 100%;
+    padding: 11.5px 15px 15px;
+    border: 1px solid transparent;
+    border-bottom: 1px solid #ccc;
+    background: 0 0;
+    outline: none;
+    font-size: 16px;
+}
+
+
+.submit-buttons {
+    display: flex; 
+    margin-top: 10px;
+    align-items: center;
+}
+
+.button {
+    cursor: pointer;
+    padding: 5px 15px;
+    margin: 10px 0px;
+    margin-right: 10px;
+    color: #333;
+    font-weight: 700;
+    font-size: 15px;
+    border: 1px solid;
+    border-radius: 25px;
+    border-color: #4835d4;
+}
+
+.tologin {
+    margin-left: 10px;
+    color: black;
+}
+
+.error-msg {
+    width: 270px;
+    position: absolute;
+}

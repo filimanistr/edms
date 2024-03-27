@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Вход{% endblock %}
+{% block style %}
+    <link rel="stylesheet" href="{% static 'auth.css' %}" />
+{% endblock %}
+
+{% block content %}
+    <div class="auth-wrapper">
+        <div class="auth-info">
+            <h2>Вход</h2>
+        </div>
+
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            <div class="input-field-wrapper">
+                <input type="text" name="username" placeholder="Имя пользователя"></input>
+            </div>
+            <div class="input-field-wrapper">
+                <input type="password" name="password" placeholder="Пароль"></input>
+            </div>
+
+            <button type="submit" class="button" id="auth">Войти</button>
+            <a class="tologin" href="/accounts/register">Создать аккаунт</a>
+        </form>
+
+        {% if form.errors %}
+        <p class="error-msg">Your username and password didn't match. Please try again.</p>
+        {% endif %}
+
+        {% if next %}
+            {% if user.is_authenticated %}
+            <p class="error-msg">Your account doesn't have access to this page. To proceed,
+            please login with an account that has access.</p>
+            {% else %}
+            <p class="error-msg">Please login to see this page.</p>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endblock %}

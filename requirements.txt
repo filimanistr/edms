@@ -1,0 +1,8 @@
+Django
+djangorestframework
+markdown       
+django-filter
+psycopg2-binary
+cx_Oracle
+dadata
+mammoth
