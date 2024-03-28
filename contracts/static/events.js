@@ -55,7 +55,7 @@ function createNewContract() {
     closeWindow(current_opened_win);
 
     let formData = new FormData();
-    formData.append("counterpartie", counterpartie);
+    formData.append("counterparty", counterpartie);
     formData.append("template", template);
     formData.append("title", file.name);
     formData.append('file', file);

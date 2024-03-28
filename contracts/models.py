@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-class Counterpartie(models.Model):
+
+class Counterparty(models.Model):
     id = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     short_name = models.TextField("наименование краткое",
                                   db_column = "наименование_краткое")
@@ -35,6 +36,7 @@ class Counterpartie(models.Model):
     head_pos_middle_name = models.TextField("отчествор", db_column = "отчествор")
     reason = models.TextField("На основании чего действует руководитель",
                               db_column = "основание")
+
     def __str__(self):
         return self.short_name
 
@@ -67,7 +69,6 @@ class ServicesReference(models.Model):
         db_table = "СправочникУслуг"
 
 
-
 class ContractTemplate(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.TextField("наименование", db_column = "наименование")
@@ -76,6 +77,7 @@ class ContractTemplate(models.Model):
                                 on_delete = models.CASCADE,
                                 verbose_name = "услуга",
                                 db_column = "услуга")
+
     def __str__(self):
         return self.name
 
@@ -83,13 +85,15 @@ class ContractTemplate(models.Model):
         db_table = "ШаблонДоговора"
 
 
-class Contracts(models.Model):
+class Contract(models.Model):
     """Связывающая таблица Контрагента и Шаблонов договоров"""
     id = models.AutoField(primary_key=True)
-    counterpartie = models.ForeignKey(Counterpartie,
-                                      on_delete = models.CASCADE,
-                                      verbose_name = "контрагент",
-                                      db_column = "контрагент")
+    # FIX
+    # name = models.TextField("")
+    counterparty = models.ForeignKey(Counterparty,
+                                     on_delete = models.CASCADE,
+                                     verbose_name = "контрагент",
+                                     db_column = "контрагент")
     template = models.ForeignKey(ContractTemplate,
                                  on_delete = models.CASCADE,
                                  verbose_name = "шаблон",
@@ -99,16 +103,17 @@ class Contracts(models.Model):
     status = models.TextField("статус", db_column = "статус")
 
     def __str__(self):
-        return self.counterpartie.short_name + " " + self.template.name
+        return self.counterparty.short_name + " " + self.template.name
 
     class Meta:
         db_table = "Договора"
+
 
 # Предполагает, что контрагент и шаблон не меняется
 # Регистрация изменений только самого договора
 class ContractsHistory(models.Model):
     id = models.AutoField(primary_key=True)
-    contract_id = models.ForeignKey(Contracts,
+    contract_id = models.ForeignKey(Contract,
                                     on_delete = models.CASCADE,
                                     verbose_name = "id договора", 
                                     db_column = "id_договора")
@@ -118,6 +123,7 @@ class ContractsHistory(models.Model):
 
     class Meta:
         db_table = "ИсторияДоговоров"
+
 
 class ClosingDocument(models.Model):
     id = models.AutoField(primary_key=True)
@@ -132,10 +138,11 @@ class ClosingDocument(models.Model):
                                 on_delete = models.CASCADE,
                                 verbose_name = "услуга",
                                 db_column = "услуга")
-    contract = models.ForeignKey(Contracts,
+    contract = models.ForeignKey(Contract,
                                  on_delete = models.CASCADE,
                                  verbose_name = "договор",
                                  db_column = "договор")
+
     class Meta:
         db_table = "ЗакрывающиеДокументы"
 
@@ -143,13 +150,14 @@ class ClosingDocument(models.Model):
 class Payments(models.Model):
     """Таблица с информацией о поступлении оплаты"""
     id = models.AutoField(primary_key=True)
-    counterpartie = models.TextField("учреждение", db_column = "учреждение")
+    counterparty = models.TextField("учреждение", db_column ="учреждение")
     reason = models.TextField("назначение платежа", db_column = "назначение_платежа")
     date = models.DateField("дата оплаты", db_column = "дата_оплаты")
     price = models.DecimalField("сумма оплаты",
                                 max_digits = 10,
                                 decimal_places = 2,
                                 db_column = "сумма_оплаты")
+
     class Meta:
         db_table = "ПоступающиеОплаты"
 

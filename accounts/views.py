@@ -5,7 +5,7 @@ from django.contrib.auth import login
 
 from dadata import Dadata
 
-from contracts.models import Counterpartie
+from contracts.models import Counterparty
 from .forms import NewCounterpartieForm, NewUserForm
 from .config import WEB_REGISTRATION_FIELDS, DADATA_API_TOKEN, \
                     COUNTERPARTIE_MODEL_FIELDS, DADATA_SECRET_KEY
@@ -60,7 +60,7 @@ def register(request):
         if not user_form.is_valid():
             return JsonResponse(user_form.errors.get_json_data(), safe=False)
         user = user_form.save()
-        Counterpartie.objects.create(id=user, **fields)
+        Counterparty.objects.create(id=user, **fields)
 
         login(request, user)
         username = user_form.cleaned_data.get('username')

@@ -107,7 +107,7 @@ def templates(request):
 def contract_fields(request):
     """Возвращает поля необходимые для создания контракта"""
     return JsonResponse({
-        "counterpartie": "Контрагент",
+        "counterparty": "Контрагент",
         "template": "Шаблон договора",
         "contract": "Договор",
     }, safe=False)

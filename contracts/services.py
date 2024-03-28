@@ -7,8 +7,8 @@ from django.db.models import Subquery
 import os, io
 import base64
 
-from .models import Contracts, ContractsHistory, \
-        ContractTemplate, Counterpartie
+from .models import Contract, ContractsHistory, \
+        ContractTemplate, Counterparty
 from .config import CONTRACTS_PATH, ADMINS
 
 # Тут описывается вся бизнес логика
@@ -32,19 +32,19 @@ from .config import CONTRACTS_PATH, ADMINS
 
 
 def get_contract(contract_id: int) -> dict:
-    q = Contracts.objects.select_related("counterpartie") \
+    q = Contracts.objects.select_related("counterparty") \
         .select_related("template") \
         .get(id=contract_id)
     return model_to_dict(q)
 
 def get_all_contracts() -> list:
-    q = Contracts.objects.select_related("counterpartie") \
+    q = Contracts.objects.select_related("counterparty") \
         .select_related("template") \
         .values("id", "counterpartie__short_name", "template__id", "template__name", "contract", "status", "year")
     return list(q)
 
 def get_user_contracts(user_id: int) -> list:
-    q = Contracts.objects.select_related("counterpartie") \
+    q = Contracts.objects.select_related("counterparty") \
         .select_related("template") \
         .filter(counterpartie_id=user_id) \
         .values("id", "counterpartie__short_name", "template__id", "template__name", "contract", "status", "year")
@@ -53,7 +53,7 @@ def get_user_contracts(user_id: int) -> list:
 
 def create_new_contract(contract: QueryDict, data) -> dict:
     data = base64.b64encode(data).decode("utf-8")
-    counterpartie = Counterpartie.objects.get(id=contract["counterpartie"])
+    counterpartie = Counterparty.objects.get(id=contract["counterparty"])
     template = ContractTemplate.objects.get(id=contract["template"])
     q = Contracts.objects.create(
         counterpartie = counterpartie,
@@ -113,7 +113,7 @@ def update_contract_status(contract_id: int, username: str) -> str:
 
 
 def get_all_counterparties() -> list[dict]:
-    r = Counterpartie.objects.all().values()
+    r = Counterparty.objects.all().values()
     return list(r)
 
 def get_contract_templates() -> list[dict]:

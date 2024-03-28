@@ -23,12 +23,12 @@ const b64toBlob = (b64Data, contentType='', sliceSize=512) => {
 async function addInfoToAboutContractWindow(contract_id) {
     let contract_wrapper = document.querySelector(".contract"+contract_id);
     let h4 = contract_wrapper.querySelector("#contract-template-name")
-    let p1 = contract_wrapper.querySelector("#contract-counterpartie")
+    let p1 = contract_wrapper.querySelector("#contract-counterparty")
     let p2 = contract_wrapper.querySelector("#contract-year")
 
     let win = document.querySelector(".about-contract");
     let head = win.querySelector("#about-contract-header");
-    let counterpartie = win.querySelector("#contract-counterpartie")
+    let counterpartie = win.querySelector("#contract-counterparty")
     let year = win.querySelector("#contract-year")
     head.innerText = h4.innerText;
     counterpartie.innerText = p1.innerText;
@@ -170,7 +170,7 @@ async function drawRow(contract) {
     let row = '<tr class="contract'+contract.id+' border-b transition duration-300 ease-in-out hover:bg-neutral-100 dark:border-neutral-500 dark:hover:bg-neutral-600">';
     row += '<td id="contract-id" class="whitespace-nowrap px-6 py-4 font-medium">'+contract.id+'</td>\n';
     row += '<td id="contract-template-name" class="whitespace-nowrap px-6 py-4">'+contract.template__name+'</td>\n';
-    row += '<td id="contract-counterpartie" class="whitespace-nowrap px-6 py-4">'+contract.counterpartie__short_name+'</td>\n';
+    row += '<td id="contract-counterparty" class="whitespace-nowrap px-6 py-4">'+contract.counterpartie__short_name+'</td>\n';
     row += '<td id="contract-template-id" class="whitespace-nowrap px-6 py-4">'+contract.template__id+'</td>\n';
     row += '<td id="contract-status" class="whitespace-nowrap px-6 py-4">'+contract.status+'</td>\n';
     row += '<td id="contract-year" class="whitespace-nowrap px-6 py-4">'+contract.year+'</td>\n';

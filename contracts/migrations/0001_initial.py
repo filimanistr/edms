@@ -55,7 +55,7 @@ class Migration(migrations.Migration):
             name='Payments',
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('counterpartie', models.TextField(db_column='учреждение', verbose_name='учреждение')),
+                ('counterparty', models.TextField(db_column='учреждение', verbose_name='учреждение')),
                 ('reason', models.TextField(db_column='назначение_платежа', verbose_name='назначение платежа')),
                 ('date', models.DateField(db_column='дата_оплаты', verbose_name='дата оплаты')),
                 ('price', models.DecimalField(db_column='сумма_оплаты', decimal_places=2, max_digits=10, verbose_name='сумма оплаты')),
@@ -95,7 +95,7 @@ class Migration(migrations.Migration):
                 ('contract', models.TextField(db_column='договор', verbose_name='договор')),
                 ('year', models.IntegerField(db_column='год', verbose_name='год')),
                 ('status', models.TextField(db_column='статус', verbose_name='статус')),
-                ('counterpartie', models.ForeignKey(db_column='контрагент', on_delete=django.db.models.deletion.CASCADE, to='contracts.counterpartie', verbose_name='контрагент')),
+                ('counterparty', models.ForeignKey(db_column='контрагент', on_delete=django.db.models.deletion.CASCADE, to='contracts.counterparty', verbose_name='контрагент')),
                 ('template', models.ForeignKey(db_column='шаблон', on_delete=django.db.models.deletion.CASCADE, to='contracts.contracttemplate', verbose_name='шаблон')),
             ],
             options={
