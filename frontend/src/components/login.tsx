@@ -4,9 +4,9 @@ import {Input} from "@/components/ui/input";
 import Link from "next/link";
 import {Button} from "@/components/ui/button";
 import {getToken} from "@/tokens";
-import { useRouter } from "next/navigation"
-import { useToast } from "@/components/ui/use-toast"
-import {useState} from "react";  // Всплывающее окошко
+import {useRouter} from "next/navigation"
+import {useToast} from "@/components/ui/use-toast"
+import {useState} from "react";
 
 
 export default function Login({ toggleComponent }) {
@@ -26,6 +26,7 @@ export default function Login({ toggleComponent }) {
     event.preventDefault();
     let r = await getToken(user);
     if (r === true) {
+      console.log("ДА ОНО ВЕРНУЛО ТРУ")
       router.push("/")
     } else {
       toast({

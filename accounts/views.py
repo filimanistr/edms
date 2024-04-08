@@ -85,13 +85,10 @@ def login(request):
         token = Token.objects.get(user=user)
 
     response = Response()
-    response.set_cookie(key="token",
-                        value=token.key,
-                        httponly=True,
-                        max_age=60*60*24*28)
     response.data = {
         "token": token.key
     }
+
     return response
 
 

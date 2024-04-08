@@ -56,8 +56,9 @@ async function makeGetRequest(url: string) {
   return data
 }
 
-async function getToken(user: object) {
+export async function getToken(user: object) {
   // Получает с сервера токен, т.е. регистрирует пользователя
+  // Сохраняет в куки
   // Если все успешно возвращает true
   // Если не очень - текст с ошибками
 
@@ -72,9 +73,63 @@ async function getToken(user: object) {
 
   let data = await res.json();
   if (data.hasOwnProperty('token')) {
+    cookies().set({
+      name: 'token',
+      value: data.token,
+      httpOnly: true,
+      maxAge: 60*60*24*28,
+      path: '/',
+    })
     return true;
   } else {
     return data;
   }
 }
 
+
+
+
+
+/*
+export async function getToken(user: object) {
+  // Получает с сервера токен, т.е. регистрирует пользователя
+  // Если все успешно возвращает true
+  // Если не очень - текст с ошибками
+  let data = await makePostRequest("http://localhost:8000/api/accounts/login/", user)
+  if (data.hasOwnProperty('token')) {
+    return true;
+  } else {
+    return data;
+  }
+}
+
+
+async function makeGetRequest(url: string) {
+  const cookieStore = cookies()
+
+  const res = await fetch(url, {
+    headers: {"Authorization": "Token " + cookieStore.get("token").value},
+    cache: 'no-store'
+  });
+
+  let data = await res.json();
+  return data
+}
+
+
+
+async function makePostRequest(url: string, data: object) {
+  // data это просто json объект и только
+  const res = await fetch(url, {
+      method: "POST",
+      headers: {"Content-type": "application/json"},
+      credentials: 'include',
+      body: JSON.stringify(data),
+      cache: 'no-store'
+    }
+  )
+
+  return await res.json();
+}
+
+ */
