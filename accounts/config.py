@@ -11,18 +11,19 @@ ERROR_MESSAGES_TRANSLATIONS = {
     "password_too_similar": "Пароль слишком похож на имя пользователя",
 }
 
+
 WEB_REGISTRATION_FIELDS = [
     {
         "head_first_name": "Имя",
         "head_last_name": "Фамилия",
         "head_middle_name": "Отчество",
-        "username": "Имя пользователя",
+        "email": "Почта",
         "password1": "Пароль",
         "password2": "Повторите пароль",
         "reason": "Основания",
     },
     {
-        "short_name": "Короткое наименование организации",
+        "name": "Короткое наименование организации",
         "full_name": "Полное наименование организации",
         "INN": "ИНН",
         "KPP": "КПП",
@@ -32,8 +33,8 @@ WEB_REGISTRATION_FIELDS = [
     }
 ]
 
-COUNTERPARTIE_MODEL_FIELDS = [
-    "short_name",
+COUNTERPARTY_MODEL_FIELDS = [
+    "name",
     "full_name",
     "INN",
     "KPP",

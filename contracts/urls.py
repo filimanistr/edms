@@ -4,16 +4,11 @@ from . import views
 # contracts URLconf
 
 urlpatterns = [
-    path('contracts/', views.index, name='index'),
+    path('api/contracts/', views.Contracts.as_view(), name='contracts'),                     # OK
+    path('api/contracts/<int:contract_id>/', views.Contract.as_view(), name='contract'),     # OK
+    path('api/contracts/fields/', views.ContractFields.as_view(), name='contract_fields'),   # OK
 
-    path('api/is_admin/', views.is_admin, name='is_admin'),
-
-    path('api/contracts/', views.contracts, name='contracts'),
-    path('api/contracts/<int:contract_id>/', views.contract, name='contract'),
-    path('api/contracts/fields/', views.contract_fields, name='contract_fields'),
-    path('api/contracts/approve/', views.approve_contract, name='approve'),
-
-    path('api/contracts/templates/', views.templates, name='templates'),
-    path('api/counterparties/', views.counterparties, name='counterparties'),
-
+    path('api/counterparties/', views.Counterparties.as_view(), name='counterparties'),      # OK
+    path('api/templates/', views.Templates.as_view(), name='templates'),                     # OK
+    path('api/services/', views.Services.as_view(), name='services'),                        # OK
 ]

@@ -6,7 +6,9 @@ STATUSES = ["ожидает согласования заказчиком",
             "ожидает согласование поставщиком",
             "согласован"]
 
-ADMINS = ("admin", "root")  # List usernames here 
+ADMINS = (
+    "filimanistr@gmail.com",
+)
 
 # Должны обязательно заканчиваться на / 
 CONTRACTS_PATH = "data/договора/"

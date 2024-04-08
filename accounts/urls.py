@@ -1,29 +1,30 @@
-from django.contrib.auth import views as auth_views
-from django.urls import path
+from django.urls import path, include
+from dj_rest_auth.registration.views import RegisterView
+from dj_rest_auth.views import LoginView, LogoutView, UserDetailsView
+
+from .forms import CustomUserCreationForm
 from . import views
+
 
 # accounts URLconf
 
 urlpatterns = [
-    path('accounts/profile/',
-         views.profile,
-         name = 'profile',
-    ),
-    path('accounts/register/',
-         views.register,
-         name = 'register'
-    ),
-    path('accounts/login/',
-         auth_views.LoginView.as_view(template_name='login.html'),
-         name = 'login'
-    ),
-    path('accounts/logout/',
-         auth_views.LogoutView.as_view(template_name='logout.html'),
-         name = 'logout'
-    ),
+    path("register/", RegisterView.as_view(), name="rest_register"),
+    path("login/", views.login, name="rest_login"),
+    path("logout/", LogoutView.as_view(), name="rest_logout"),
+    path("user/", UserDetailsView.as_view(), name="rest_user_details"),
 
-    path('api/accounts/get/fields/',
+    path('profile/',
+         views.profile,
+         name='profile',
+         ),
+    path('register/',
+         views.register,
+         name='register'
+         ),
+
+    path('fields/',
          views.fields,
-         name = 'fields'
-    ),
+         name='fields'
+         ),
 ]

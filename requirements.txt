@@ -1,5 +1,7 @@
 Django
 djangorestframework
+django-allauth
+dj-rest-auth
 markdown       
 django-filter
 psycopg2-binary
