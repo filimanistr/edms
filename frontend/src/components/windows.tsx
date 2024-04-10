@@ -59,14 +59,22 @@ import {
   DownloadButton,
   UploadButton,
   HistoryButton,
+  DeleteButton
 } from "@/components/buttons"
 
 // Запросы
 import {
+  createNewContract,
+  createNewTemplate,
   getContract,
-  getFields, getServices
+  getFields,
+  getServices,
+  getTemplate
 } from "@/tokens";
 
+// Таблица вызывает окошко, окошко вызывает кнопки, которые вызывают окошки)
+// А все потому что кнопки вызывает второстепенные окна
+// окна поверх окон
 
 
 async function drawContent(props: any) {
@@ -82,9 +90,12 @@ async function drawContent(props: any) {
         <DialogDescription>
           Контрагент: {new_data.counterparty__name}
           <br/>
+          Шаблон: {new_data.template__name}
+          <br/>
           {new_data.status}
           <br/>
           {new_data.year}
+          <br/>
         </DialogDescription>
       </DialogHeader>
 
@@ -94,6 +105,37 @@ async function drawContent(props: any) {
           <EditButton/>
           <DownloadButton/>
           <HistoryButton/>
+          {/* <DeleteButton/> */}
+        </div>
+
+        <Button type="submit">Согласовать</Button>
+      </DialogFooter>
+    </>
+  )
+}
+
+async function drawTemplateWinContent(props: any) {
+  const index = props.children.key;
+  const old_data = props.data;
+  const template_index = old_data[index].id;
+  const new_data = await getTemplate(template_index)
+
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>{new_data.name}</DialogTitle>
+        <DialogDescription>
+          Услуга: {new_data.service__name} <br/><br/>
+        </DialogDescription>
+      </DialogHeader>
+
+      <DialogFooter>
+        <div className="flex w-full">
+          <WatchButton/>
+          <EditButton/>
+          <DownloadButton/>
+          <HistoryButton/>
+          {/* <DeleteButton/> */}
         </div>
 
         <Button type="submit">Согласовать</Button>
@@ -111,7 +153,7 @@ export function AboutWindow(props: any) {
       <DialogHeader>
         <DialogTitle>Edit profile</DialogTitle>
         <DialogDescription>
-          Make changes to your profile here. Click save when you're done.
+          Make changes to your profile here. Click save when you are done.
         </DialogDescription>
       </DialogHeader>
       <DialogFooter>
@@ -127,7 +169,11 @@ export function AboutWindow(props: any) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]" autoFocus={false} onOpenAutoFocus={async (event) => {
         event.preventDefault();
-        setDialogContent(await drawContent(props));
+        if (props.page == "/contracts") {
+          setDialogContent(await drawContent(props));
+        } else if (props.page == "/templates") {
+          setDialogContent(await drawTemplateWinContent(props));
+        }
       }}>
         {dialogContent}
       </DialogContent>
@@ -139,6 +185,7 @@ export function AboutWindow(props: any) {
 //       перерисовываться должны комманды
 
 function SelectWithSearch({data, default_value, not_found, value, setValue}) {
+  // TODO: Чтобы без постоянной конвертации типов надо версию 0.2.0 скачать cmdk
   const [open, setOpen] = useState(false)
 
   return (
@@ -152,7 +199,7 @@ function SelectWithSearch({data, default_value, not_found, value, setValue}) {
             className="w-[200px] justify-between"
           >
             {value
-              ? data.find((datum) => datum.name === value)?.name
+              ? data.find((item) => item.id === value)?.name
               : default_value}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -162,26 +209,26 @@ function SelectWithSearch({data, default_value, not_found, value, setValue}) {
             <CommandInput placeholder="Выбрать контрагента" />
             <CommandEmpty>{not_found}</CommandEmpty>
             <CommandList>
-            <CommandGroup>
-              {data.map((datum) => (
-                <CommandItem
-                  key={datum.name}
-                  value={datum.name}
-                  onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue)
-                    setOpen(false)
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === datum.name ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {datum.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+              <CommandGroup>
+                {data.map((item) => (
+                  <CommandItem
+                    key={`${item.id}`}
+                    value={`${item.id}`}
+                    onSelect={(currentValue) => {
+                      setValue(currentValue === value ? "" : parseInt(currentValue))
+                      setOpen(false)
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === `${item.id}` ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {item.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
             </CommandList>
           </Command>
         </PopoverContent>
@@ -190,22 +237,21 @@ function SelectWithSearch({data, default_value, not_found, value, setValue}) {
   )
 }
 
-export function CreateWindow(props) {
+export function CreateWindow(props: any) {
   if (props.page === "/contracts") {
     return (
-      <CreateContractWindow>
+      <CreateContractWindow data={props.data} setData={props.setData}>
         {props.children}
       </CreateContractWindow>
     )
   } else if (props.page == "/templates") {
     return (
-      <CreateTemplateWindow>
+      <CreateTemplateWindow data={props.data} setData={props.setData}>
         {props.children}
       </CreateTemplateWindow>
     )
   }
 }
-
 
 export function CreateContractWindow(props: any) {
   const { toast } = useToast()
@@ -219,12 +265,13 @@ export function CreateContractWindow(props: any) {
   })
 
   // Выбранные значения
+  const [name, setName] = useState(null);
   const [counterparty, setCounterparty] = useState(null);
   const [template, setTemplate] = useState(null);
   const [service, setService] = useState(null);
 
   const handleClose = () => {
-    if (counterparty !== null && template !== null && service !== null) {
+    if (counterparty !== null && template !== null && service !== null && name !== null) {
       setDisable(false)
     } else {
       setDisable(true)
@@ -233,7 +280,7 @@ export function CreateContractWindow(props: any) {
 
   useEffect(() => {
     handleClose();
-  }, [counterparty, template, service]);
+  }, [counterparty, template, service, name]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -268,15 +315,27 @@ export function CreateContractWindow(props: any) {
 
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="username" className="text-right">
+              Название
+            </Label>
+            <Input type="text"
+                   placeholder="Договор #1"
+                   required
+                   className=" items-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-[200px] justify-between"
+                   onChange={e => setName(e.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Контрагент
             </Label>
-            { show && <SelectWithSearch data={data.counterparties}
-                                        default_value={"Выбрать контрагента"}
-                                        not_found={"Контрагент не найден"}
-                                        value={counterparty}
-                                        setValue={setCounterparty}
-                                        />}
+            {show && <SelectWithSearch data={data.counterparties}
+                                       default_value={"Выбрать контрагента"}
+                                       not_found={"Контрагент не найден"}
+                                       value={counterparty}
+                                       setValue={setCounterparty}
+            />}
 
           </div>
 
@@ -284,26 +343,26 @@ export function CreateContractWindow(props: any) {
             <Label htmlFor="username" className="text-right">
               Услуга
             </Label>
-            { show && <SelectWithSearch data={data.services}
-                                        default_value={"Выбрать услугу"}
-                                        not_found={"Услуга не найдена"}
-                                        value={service}
-                                        setValue={setService}
-                                        /> }
+            {show && <SelectWithSearch data={data.services}
+                                       default_value={"Выбрать услугу"}
+                                       not_found={"Услуга не найдена"}
+                                       value={service}
+                                       setValue={setService}
+            />}
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="username" className="text-right">
               Шаблоны
             </Label>
-            { show && <SelectWithSearch data={data.templates}
-                                        default_value={"Выбрать шаблон"}
-                                        not_found={"Шаблон не найден"}
-                                        value={template}
-                                        setValue={setTemplate}
-                                        /> }
+            {show && <SelectWithSearch data={data.templates}
+                                       default_value={"Выбрать шаблон"}
+                                       not_found={"Шаблон не найден"}
+                                       value={template}
+                                       setValue={setTemplate}
+            />}
             <div className="">
-              <WatchButton/>
+              {/* <WatchButton/> */}
             </div>
           </div>
         </div>
@@ -312,12 +371,20 @@ export function CreateContractWindow(props: any) {
           <Button
             type="submit"
             disabled={disable}
-            onClick={() => {
-              
+            onClick={async () => {
+              const new_row = await createNewContract({
+                counterparty: counterparty,
+                template: template,
+                service: service,
+                name: name
+              })
+
+              props.setData(oldData => [...oldData, new_row])
               setOpen(false);
-              setCounterparty(null)
-              setTemplate(null)
-              setService(null)
+              setCounterparty(null);
+              setTemplate(null);
+              setService(null);
+              setName(null)
               toast({
                 description: "Новый договор был создан успешно"
               })
@@ -332,7 +399,6 @@ export function CreateContractWindow(props: any) {
   )
 }
 
-
 export function CreateTemplateWindow(props: any) {
   const { toast } = useToast()
   const [disable, setDisable] = useState(true)         // Отображение кнопки сохранения
@@ -341,12 +407,12 @@ export function CreateTemplateWindow(props: any) {
   const [services, setServices] = useState()
 
   // Выбранные значения
+  const [name, setName] = useState(null);
   const [template, setTemplate] = useState(null);
   const [service, setService] = useState(null);
 
   const handleClose = () => {
-    console.log("template: ", template, "\nservice: ", service)
-    if (template !== null && service !== null) {
+    if (template !== null && service !== null && name !== null) {
       setDisable(false)
     } else {
       setDisable(true)
@@ -382,16 +448,29 @@ export function CreateTemplateWindow(props: any) {
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
+
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="username" className="text-right">
+              Название
+            </Label>
+            <Input type="text"
+                   placeholder="Шаблон #1"
+                   required
+                   className=" items-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-[200px] justify-between"
+                   onChange={e => setName(e.target.value)}
+            />
+          </div>
+
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="username" className="text-right">
               Услуга
             </Label>
-            { show && <SelectWithSearch data={services}
-                                        default_value={"Выбрать услугу"}
-                                        not_found={"Услуга не найдена"}
-                                        value={service}
-                                        setValue={setService}
-            /> }
+            {show && <SelectWithSearch data={services}
+                                       default_value={"Выбрать услугу"}
+                                       not_found={"Услуга не найдена"}
+                                       value={service}
+                                       setValue={setService}
+            />}
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
@@ -414,10 +493,19 @@ export function CreateTemplateWindow(props: any) {
           <Button
             type="submit"
             disabled={disable}
-            onClick={() => {
+            onClick={async () => {
+              let formdata = new FormData()
+              formdata.append('file', template)
+              formdata.append('service', service)
+              formdata.append('name', name)
+
+              const new_row = await createNewTemplate(formdata);
+              props.setData(oldData => [...oldData, new_row])
+
               setOpen(false);
               setTemplate(null)
               setService(null)
+              setName(null)
               toast({
                 description: "Новый шаблон был создан успешно, требует редактирования"
               })
@@ -431,3 +519,6 @@ export function CreateTemplateWindow(props: any) {
   )
 }
 
+export function AreYouSureWindow(props: any) {
+
+}

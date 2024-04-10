@@ -32,12 +32,14 @@ import { DataTablePagination} from "@/components/table/data-table-pagination";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  page: string
 }
 
 
 export function DataTable<TData, TValue>({
                                            columns,
                                            data,
+                                           page,
                                          }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -62,7 +64,6 @@ export function DataTable<TData, TValue>({
     <>
 
       {/* Фильтрация */}
-
       <div className="flex items-center py-4 w-full">
         <Input
           placeholder="Фильтровать контрагентов..."
@@ -101,7 +102,8 @@ export function DataTable<TData, TValue>({
             table.getRowModel().rows.map((row) => (
               <AboutWindow
                 key={row.id}
-                data={data}>
+                data={data}
+                page={page}>
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}

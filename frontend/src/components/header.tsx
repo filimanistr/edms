@@ -18,7 +18,7 @@ import { CreateWindow } from "@/components/windows"
 import { createNewContract } from "@/tokens"
 
 
-export default function Header({page}) {
+export default function Header({page, data, setData}) {
 
   return (
       <header className="sticky items-center gap-4 border-b bg-background px-4">
@@ -76,7 +76,7 @@ export default function Header({page}) {
         <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
           {/* Новый объект */}
           <div className="ml-auto text-muted-foreground">
-            <CreateWindow page={page}>
+            <CreateWindow page={page} data={data} setData={setData}>
               <Button variant="ghost" size="sm">
                 Новый
               </Button>

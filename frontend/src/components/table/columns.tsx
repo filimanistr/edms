@@ -12,9 +12,9 @@ import internal from "node:stream";
 // This type is used to define the shape of our data.
 export type Contract = {
   id: number
-  template__name: string
+  name: string
   counterparty__name: string
-  template__id: number
+  template_name: string
   status: "ожидает согласования заказчиком" | "ожидает согласование поставщиком" | "согласован"
   year: number
 }
@@ -34,7 +34,7 @@ export const columns: ColumnDef<Contract>[] = [
     cell: ({ row }) => row.index + 1
   },
   {
-    accessorKey: "template__name",
+    accessorKey: "name",
     header: "Название",
   },
   {
@@ -52,7 +52,7 @@ export const columns: ColumnDef<Contract>[] = [
     },
   },
   {
-    accessorKey: "template__id",
+    accessorKey: "template__name",
     header: "Шаблон",
   },
   {

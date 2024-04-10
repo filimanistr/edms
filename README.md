@@ -28,6 +28,13 @@ html, css, js файлы разбросанны по папкам templates и s
    Используется авторизация на основе токенов
    необходимо пересмотреть
 
+2. Конвертация в HTML 
+   выбраны пакет aspose-words и mammouth
+
+   https://pypi.org/project/aspose-words/
+   https://reference.aspose.com/words/python-net/aspose.words/#classes
+   fix error: export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+
 
 ## TODO:
 1. front end

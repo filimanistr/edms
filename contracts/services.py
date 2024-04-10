@@ -3,7 +3,10 @@ from django.http import QueryDict
 from django.forms.models import model_to_dict
 from django.db.models import Max
 
+import mammoth
+# import aspose.words as aw
 import base64
+import io
 
 from .models import Contract, ContractsHistory, ContractTemplate, Counterparty, ServicesReference
 from .config import ADMINS
@@ -14,6 +17,7 @@ from .config import ADMINS
 
 def get_all_contracts() -> list:
     q = Contract.objects.values("id",
+                                "name",
                                 "counterparty__name",
                                 "template__id",
                                 "template__name",
@@ -36,6 +40,7 @@ def get_contract(contract_id: int) -> dict:
 
 def get_user_contracts(user_id: int) -> list:
     q = Contract.objects.values("id",
+                                "name",
                                 "counterparty__name",
                                 "template__id",
                                 "template__name",
@@ -45,23 +50,62 @@ def get_user_contracts(user_id: int) -> list:
     return q
 
 
-def create_new_contract(contract: QueryDict, data) -> dict:
-    # FIXME
-    data = base64.b64encode(data).decode("utf-8")
-    counterparty = Counterparty.objects.get(id=contract["counterparty"])
-    template = ContractTemplate.objects.get(id=contract["template"])
+def create_new_contract(counterparty_id: int, service_id: int, template_id: int, name: str) -> dict:
+    counterparty = Counterparty.objects.get(id=counterparty_id)
+    service = ServicesReference.objects.get(id=service_id)
+    template = ContractTemplate.objects.get(id=template_id)
+    # TODO: Тут должно исправлять template и исправленный вставлять в контракт
+    #       новый статус черновик
     q = Contract.objects.create(
         counterparty=counterparty,
         template=template,
-        contract=data,
+        name=name,
+        contract=template.template,
         year=timezone.now().year,
-        status="ожидает согласования заказчиком"
+        status="черновик"
     )
 
     r = model_to_dict(q)
     r["counterparty__name"] = counterparty.name
     r["template__name"] = template.name
     return r
+
+
+
+def create_new_template(name: str, service_id: int, file) -> dict:
+    data = b''
+    for chunk in file.chunks():
+        data += chunk
+
+    doc = mammoth.convert_to_html(io.BytesIO(data))
+
+    # OPTIONAL
+    # doc = aw.Document(io.BytesIO(data))
+    # doc.save("Output.html")
+
+    # TODO: Ловить возможные ошибки надо и в случае чего пробовать опциональный конвертер
+    # TODO: Еще опциональный выбор: формирование HTML со стороны клиента 
+
+    service = ServicesReference.objects.get(id=service_id)
+    q = ContractTemplate.objects.create(
+        name=name,
+        template=doc.value,
+        service=service
+    )
+
+    return model_to_dict(q)
+
+
+def get_contract_templates() -> list[dict]:
+    r = ContractTemplate.objects.values("id", "name", "service__name")
+    return list(r)
+
+def get_template(template_id: int) -> dict:
+    r = ContractTemplate.objects.values("id",
+                                        "name",
+                                        "service__name").get(id=template_id)
+    return r
+
 
 
 # FIXME: Вынести в отдельные функции преобразование статусов
@@ -111,11 +155,6 @@ def update_contract_status(contract_id: int, username: str) -> str:
 
 def get_all_counterparties() -> list[dict]:
     r = Counterparty.objects.all().values()
-    return list(r)
-
-
-def get_contract_templates() -> list[dict]:
-    r = ContractTemplate.objects.values("id", "name", "service__name")
     return list(r)
 
 

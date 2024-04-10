@@ -5,8 +5,11 @@ from django.contrib.auth.decorators import login_required
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from .services import *
+
+# TODO: Тут нужны drf generic base classes 
 
 
 class Contract(APIView):
@@ -41,7 +44,6 @@ class Contract(APIView):
         return JsonResponse({"status": status})
 
 
-
 class Contracts(APIView):
     """List all contracts, or create a new contract"""
     permission_classes = [IsAuthenticated]
@@ -58,19 +60,34 @@ class Contracts(APIView):
 
     def post(self, request):
         """Creates new contract, sets all the fields"""
-        file = request.FILES["file"]
-        data = b''
-        for chunk in file.chunks():
-            data += chunk
+        c = request.data["counterparty"]
+        s = request.data["service"]
+        t = request.data["template"]
+        n = request.data["name"]
+        contract = create_new_contract(counterparty_id=c,
+                                       service_id=s,
+                                       template_id=t,
+                                       name=n)
+        return JsonResponse(contract, safe=False)
 
-        print(data)
-        return JsonResponse(200)
-        '''
-        # Save html to the database
-        c = create_new_contract(request.POST, data)
-        print(c)
-        return JsonResponse(contract)
-        '''
+
+class Template(APIView):
+    """Retrieve, update or delete a template instance."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, template_id, format=None):
+        r = get_template(template_id)
+        return JsonResponse(r, safe=False)
+
+
+class Templates(APIView):
+    """List all templates"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.email in ADMINS:
+            r = get_contract_templates()
+            return JsonResponse(r, safe=False)
 
 
 class Counterparties(APIView):
@@ -84,20 +101,6 @@ class Counterparties(APIView):
 
     def post(self, request):
         # TODO: Создание новых контрагентов от лица админа
-        pass
-
-
-class Templates(APIView):
-    """List all templates, or create a new one"""
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        if request.user.email in ADMINS:
-            r = get_contract_templates()
-            return JsonResponse(r, safe=False)
-
-    def post(self, request):
-        # TODO: Добавление новых шаблонов 
         pass
 
 
@@ -121,5 +124,19 @@ class ContractFields(APIView):
     def get(self, request):
         data = get_fields()
         return JsonResponse(data, safe=False)
+
+
+''' Uploading a file '''
+
+class FileUploadAPIView(APIView):
+    """Creating new template object"""
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, *args, **kwargs):
+        file_obj = request.data['file']
+        service_id = request.data["service"]
+        name = request.data["name"]
+        template = create_new_template(name, service_id, file_obj)
+        return JsonResponse(template, safe=False)
 
 
