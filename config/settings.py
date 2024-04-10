@@ -58,10 +58,6 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     'rest_framework',
     'rest_framework.authtoken',
-    "allauth",
-    "allauth.account",
-    "dj_rest_auth",
-    "dj_rest_auth.registration",
 
     "corsheaders",
     'contracts.apps.ContractsConfig',

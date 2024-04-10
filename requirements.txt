@@ -1,10 +1,10 @@
 Django
 djangorestframework
-django-allauth
-dj-rest-auth
 markdown       
 django-filter
 psycopg2-binary
 cx_Oracle
 dadata
 mammoth
+django-cors-headers
+aspose-words
