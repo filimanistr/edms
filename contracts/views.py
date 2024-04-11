@@ -128,6 +128,7 @@ class ContractFields(APIView):
 
 ''' Uploading a file '''
 
+
 class FileUploadAPIView(APIView):
     """Creating new template object"""
     parser_classes = (MultiPartParser, FormParser)

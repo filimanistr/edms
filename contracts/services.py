@@ -71,7 +71,6 @@ def create_new_contract(counterparty_id: int, service_id: int, template_id: int,
     return r
 
 
-
 def create_new_template(name: str, service_id: int, file) -> dict:
     data = b''
     for chunk in file.chunks():
@@ -100,12 +99,12 @@ def get_contract_templates() -> list[dict]:
     r = ContractTemplate.objects.values("id", "name", "service__name")
     return list(r)
 
+
 def get_template(template_id: int) -> dict:
     r = ContractTemplate.objects.values("id",
                                         "name",
                                         "service__name").get(id=template_id)
     return r
-
 
 
 # FIXME: Вынести в отдельные функции преобразование статусов
@@ -163,15 +162,18 @@ def get_services() -> list[dict]:
     return list(r)
 
 
-def get_fields() -> dict[list]:
+def get_fields() -> dict:
+    """Возвращает элементы из которых надо выбрать нужные для нового договора
+
+    Шаблоны должны соответствовать их услугам"""
+    # TODO: Обернуть в транзакцию
     counterparties = Counterparty.objects.values("id", "name")
     services = ServicesReference.objects.values("id", "name")
-    templates = ContractTemplate.objects.values("id", "name")
+    templates = ContractTemplate.objects.values("id", "name", "service")
 
     return {
         "counterparties": list(counterparties),
         "services": list(services),
         "templates": list(templates)
     }
-
 

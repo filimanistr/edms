@@ -188,6 +188,8 @@ function SelectWithSearch({data, default_value, not_found, value, setValue}) {
   // TODO: Чтобы без постоянной конвертации типов надо версию 0.2.0 скачать cmdk
   const [open, setOpen] = useState(false)
 
+  console.log("DATA: ", data)
+
   return (
     <>
       <Popover open={open} onOpenChange={setOpen}>
@@ -263,6 +265,8 @@ export function CreateContractWindow(props: any) {
     templates: [],
     services: []
   })
+
+  console.log("Рисуется окно")
 
   // Выбранные значения
   const [name, setName] = useState(null);
@@ -343,7 +347,7 @@ export function CreateContractWindow(props: any) {
             <Label htmlFor="username" className="text-right">
               Услуга
             </Label>
-            {show && <SelectWithSearch data={data.services}
+            {show && <SelectWithSearch data={ template === null ? data.services : data.services.filter(item => item.id === data.templates.find(item2 => item2.id === template).service)}
                                        default_value={"Выбрать услугу"}
                                        not_found={"Услуга не найдена"}
                                        value={service}
@@ -355,7 +359,7 @@ export function CreateContractWindow(props: any) {
             <Label htmlFor="username" className="text-right">
               Шаблоны
             </Label>
-            {show && <SelectWithSearch data={data.templates}
+            {show && <SelectWithSearch data={ service === null ? data.templates : data.templates.filter(item => item.service === service)}
                                        default_value={"Выбрать шаблон"}
                                        not_found={"Шаблон не найден"}
                                        value={template}
