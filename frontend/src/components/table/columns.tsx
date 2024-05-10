@@ -8,14 +8,15 @@ import internal from "node:stream";
 // Note: Columns are where you define the core of what your table will look like.
 // They define the data that will be displayed, how it will be formatted, sorted and filtered.
 
-
 // This type is used to define the shape of our data.
+// TODO: Переопределить куда то в ффайл отдельный
 export type Contract = {
   id: number
   name: string
   counterparty__name: string
-  template_name: string
-  status: "ожидает согласования заказчиком" | "ожидает согласование поставщиком" | "согласован"
+  template__name: string
+  template__id: number
+  status: "ожидает согласования заказчиком" | "ожидает согласование поставщиком" | "согласован" | "черновик"
   year: number
 }
 
@@ -24,6 +25,12 @@ export type Service = {
   name: string
   amount: number
   year: number
+}
+
+export type Template = {
+  id: number
+  name: string
+  service__name: string
 }
 
 
@@ -67,7 +74,7 @@ export const columns: ColumnDef<Contract>[] = [
 
 
 
-export const templatesColumns: ColumnDef<Contract>[] = [
+export const templatesColumns: ColumnDef<Template>[] = [
   {
     accessorKey: "id",
     header: "#",

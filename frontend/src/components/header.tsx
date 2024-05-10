@@ -1,4 +1,3 @@
-/* UI */
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,21 +11,18 @@ import Link from "next/link"
 import { CircleUser, Package2, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
-import { CreateWindow } from "@/components/windows"
+import {CreateContractWindow} from "@/app/contracts/CreateContract"
+import {CreateTemplateWindow} from "@/app/templates/CreateTemplate";
 
-/* Requests */
-import { createNewContract } from "@/tokens"
-
-
-export default function Header({page, data, setData}) {
-
+export default async function Header({ page='/'}) {
   return (
-      <header className="sticky items-center gap-4 border-b bg-background px-4">
+      <header className="top-0 z-10 items-center gap-4 border-b bg-background px-4">
         <div className="flex top-0 h-16 max-w-7xl mx-auto">
         <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
 
           {/* Лого */}
           <Link
+            replace
             href="/"
             className="flex items-center gap-2 text-lg font-semibold md:text-base"
           >
@@ -36,7 +32,8 @@ export default function Header({page, data, setData}) {
 
           {/* Кнопки */}
           <Link
-            href="contracts"
+            replace
+            href="/contracts"
             className={page === "/contracts"
                 ? "text-foreground transition-colors hover:text-foreground"
                 : "text-muted-foreground transition-colors hover:text-foreground"
@@ -45,7 +42,8 @@ export default function Header({page, data, setData}) {
             Договора
           </Link>
           <Link
-            href="templates"
+            replace
+            href="/templates"
             className={page === "/templates"
               ? "text-foreground transition-colors hover:text-foreground"
               : "text-muted-foreground transition-colors hover:text-foreground"
@@ -54,7 +52,8 @@ export default function Header({page, data, setData}) {
             Шаблоны
           </Link>
           <Link
-            href="counterparties"
+            replace
+            href="/counterparties"
             className={page === "/counterparties"
               ? "text-foreground transition-colors hover:text-foreground"
               : "text-muted-foreground transition-colors hover:text-foreground"
@@ -63,7 +62,8 @@ export default function Header({page, data, setData}) {
             Контрагенты
           </Link>
           <Link
-            href="services"
+            replace
+            href="/services"
             className={page === "/services"
               ? "text-foreground transition-colors hover:text-foreground"
               : "text-muted-foreground transition-colors hover:text-foreground"
@@ -76,11 +76,26 @@ export default function Header({page, data, setData}) {
         <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
           {/* Новый объект */}
           <div className="ml-auto text-muted-foreground">
-            <CreateWindow page={page} data={data} setData={setData}>
-              <Button variant="ghost" size="sm">
-                Новый
-              </Button>
-            </CreateWindow>
+            {/*
+                TODO: Бред, переделать надо по совету ниже
+                      окна делать динамик компонентами и вызывал от события стейта.
+                      Надо разбираться с Next.js тогда и реакт в целом
+            */}
+
+            { page === "/contracts" &&
+                <CreateContractWindow>
+                    <Button variant="ghost" size="sm">
+                        Новый
+                    </Button>
+                </CreateContractWindow>
+            }
+            { page === "/templates" &&
+                <CreateTemplateWindow>
+                    <Button variant="ghost" size="sm">
+                        Новый
+                    </Button>
+                </CreateTemplateWindow>
+            }
           </div>
 
           {/* Строка поиска */}

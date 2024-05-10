@@ -1,9 +1,6 @@
 "use client"
 
-/* Sorting */
 import * as React from "react"
-
-/* Other ones */
 import {
   ColumnDef,
   flexRender,
@@ -25,16 +22,14 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
-import { AboutWindow } from "@/components/windows"
 import { DataTablePagination} from "@/components/table/data-table-pagination";
-
+import { useRouter } from "next/navigation"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   page: string
 }
-
 
 export function DataTable<TData, TValue>({
                                            columns,
@@ -60,16 +55,17 @@ export function DataTable<TData, TValue>({
     },
   })
 
+  const router = useRouter();
+
   return (
     <>
-
       {/* Фильтрация */}
       <div className="flex items-center py-4 w-full">
         <Input
           placeholder="Фильтровать контрагентов..."
-          value={(table.getColumn("counterparty__name")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("counterparty__name")?.setFilterValue(event.target.value)
+            table.getColumn("name")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -100,36 +96,36 @@ export function DataTable<TData, TValue>({
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <AboutWindow
+              <TableRow
                 key={row.id}
-                data={data}
-                page={page}>
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </AboutWindow>
+                data-state={row.getIsSelected() && "selected"}
+                onClick={() => {
+                  const index = row.id;
+                  const old_data: any = data;
+                  const dbindex = old_data[index].id;
+                  router.push(page+`/`+dbindex)
+                }}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
             ))
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+                Нет данных
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
       </div>
+
       {/* Пагинация */}
-
       <DataTablePagination table={table} />
-
     </>
   )
 }

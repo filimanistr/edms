@@ -93,7 +93,7 @@ function Stage2() {
 }
 
 
-export default function Register({ toggleComponent }) {
+export default function Register({ toggleComponent } : any) {
   const [showPart, setShowPartStatus] = useState(true);
 
   let onNextClick = () => {

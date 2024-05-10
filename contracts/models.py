@@ -84,7 +84,7 @@ class ServicesReference(models.Model):
 class ContractTemplate(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.TextField("наименование", db_column="наименование")
-    template = models.TextField("шаблон", db_column="шаблон")
+    template = models.JSONField("шаблон", db_column="шаблон")
     service = models.ForeignKey(ServicesReference,
                                 on_delete=models.CASCADE,
                                 verbose_name="услуга",
@@ -111,7 +111,7 @@ class Contract(models.Model):
                                  on_delete=models.CASCADE,
                                  verbose_name="шаблон",
                                  db_column="шаблон")
-    contract = models.TextField("договор", db_column="договор")
+    contract = models.JSONField("договор", db_column="договор")
     year = models.IntegerField("год", db_column="год")
     status = models.TextField("статус", db_column="статус")
 

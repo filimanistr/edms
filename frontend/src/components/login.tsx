@@ -3,13 +3,13 @@ import {Label} from "@/components/ui/label";
 import {Input} from "@/components/ui/input";
 import Link from "next/link";
 import {Button} from "@/components/ui/button";
-import {getToken} from "@/tokens";
 import {useRouter} from "next/navigation"
 import {useToast} from "@/components/ui/use-toast"
 import {useState} from "react";
 
+import {getToken} from "@/app/account/api";
 
-export default function Login({ toggleComponent }) {
+export default function Login({ toggleComponent }: any) {
   const { toast } = useToast()
   const router = useRouter()
 
@@ -20,13 +20,12 @@ export default function Login({ toggleComponent }) {
     password: password
   };
 
-  async function handleClick(event) {
+  async function handleClick(event:any) {
     // Получение JWT токена с сервера
     // Форматирование текста ошибки
     event.preventDefault();
     let r = await getToken(user);
     if (r === true) {
-      console.log("ДА ОНО ВЕРНУЛО ТРУ")
       router.push("/")
     } else {
       toast({

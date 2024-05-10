@@ -14,5 +14,5 @@ urlpatterns = [
     path('api/counterparties/', views.Counterparties.as_view(), name='counterparties'),
     path('api/services/', views.Services.as_view(), name='services'),
 
-    path('api/upload-file/', views.FileUploadAPIView.as_view(), name='upload-file'),
+    # path('api/upload-file/', views.FileUploadAPIView.as_view(), name='upload-file'),
 ]

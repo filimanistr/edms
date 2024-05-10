@@ -5,6 +5,5 @@ django-filter
 psycopg2-binary
 cx_Oracle
 dadata
-mammoth
 django-cors-headers
-aspose-words
+weasyprint

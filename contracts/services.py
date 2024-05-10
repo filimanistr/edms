@@ -3,10 +3,7 @@ from django.http import QueryDict
 from django.forms.models import model_to_dict
 from django.db.models import Max
 
-import mammoth
-# import aspose.words as aw
-import base64
-import io
+from weasyprint import HTML, CSS
 
 from .models import Contract, ContractsHistory, ContractTemplate, Counterparty, ServicesReference
 from .config import ADMINS
@@ -29,6 +26,7 @@ def get_all_contracts() -> list:
 def get_contract(contract_id: int) -> dict:
     q = Contract.objects.values("id",
                                 "name",
+                                "contract",
                                 "counterparty__id",
                                 "counterparty__name",
                                 "template__id",
@@ -71,24 +69,17 @@ def create_new_contract(counterparty_id: int, service_id: int, template_id: int,
     return r
 
 
-def create_new_template(name: str, service_id: int, file) -> dict:
+def create_new_template(name: str, service_id: int, template: str) -> dict:
+    '''
     data = b''
     for chunk in file.chunks():
         data += chunk
-
-    doc = mammoth.convert_to_html(io.BytesIO(data))
-
-    # OPTIONAL
-    # doc = aw.Document(io.BytesIO(data))
-    # doc.save("Output.html")
-
-    # TODO: Ловить возможные ошибки надо и в случае чего пробовать опциональный конвертер
-    # TODO: Еще опциональный выбор: формирование HTML со стороны клиента 
+    '''
 
     service = ServicesReference.objects.get(id=service_id)
     q = ContractTemplate.objects.create(
         name=name,
-        template=doc.value,
+        template=template,
         service=service
     )
 
@@ -101,23 +92,28 @@ def get_contract_templates() -> list[dict]:
 
 
 def get_template(template_id: int) -> dict:
-    r = ContractTemplate.objects.values("id",
+    q = ContractTemplate.objects.values("id",
                                         "name",
-                                        "service__name").get(id=template_id)
-    return r
-
+                                        "template",
+                                        "service__id",
+                                        "service__name").get(pk=template_id)
+    return q
 
 # FIXME: Вынести в отдельные функции преобразование статусов
 #        Внесение правок и согласование по разному влияют на статус
 
-def update_contract(contract: QueryDict, contract_id, data, username: str) -> None:
-    # FIXME
+def update_contract(contract_id: int, data: list) -> None:
+    contract = Contract.objects.get(pk=contract_id)
+    contract.contract = data
+    contract.save()
+
+    ''' FIXME: Старая тема с обновлением статуса
     if username in ADMINS:
         status = "ожидает согласования заказчиком"
     else:
         status = "ожидает согласования поставщиком"
 
-    try: 
+    try:
         last = ContractsHistory.objects.annotate(Max('version')).get(contract_id=contract_id)
         version = last.version + 1
     except ContractsHistory.DoesNotExist:
@@ -134,6 +130,13 @@ def update_contract(contract: QueryDict, contract_id, data, username: str) -> No
     contract.contract = data
     contract.status = status
     contract.save()
+    '''
+
+
+def update_template(template_id: int, data: list) -> None:
+    template = ContractTemplate.objects.get(pk=template_id)
+    template.template = data
+    template.save()
 
 
 def update_contract_status(contract_id: int, username: str) -> str:

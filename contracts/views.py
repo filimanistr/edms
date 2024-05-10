@@ -1,9 +1,6 @@
-﻿from django.shortcuts import render
-from django.http import JsonResponse, HttpResponse
-from django.contrib.auth.decorators import login_required
-
+﻿from django.http import JsonResponse, HttpResponse
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view
+
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 
@@ -20,28 +17,22 @@ class Contract(APIView):
         r = get_contract(contract_id)
         return JsonResponse(r)
 
-    def post(self, request, contract_id, format=None):
-        """Обновляем файл договора после того как внесли правки"""
-        file = request.FILES["file"]
-        data = b''
-        for chunk in file.chunks():
-            data += chunk
-        # html = to_html(data)
+    def put(self, request, contract_id, format=None):
         email = request.user.email
-        update_contract(request.POST, contract_id, data, email)
+        update_contract(contract_id, request.data)
         return HttpResponse(status=200)
 
+    '''
     def put(request):
-        # FIXME: Это approve_contract
-        """Обновляет статус контракта и возвращает новый
-
-        Обновление статуса контракта а так же самого контракта
-        """
+        # TODO: Решить что то завтра по статусу
+        #       кидать его в PUT не правильная тема чето
+        """Sets contract's status"""
         put = QueryDict(request.body)
         contract_id = put.get("contract")
         email = request.user.email
         status = update_contract_status(contract_id, email)
         return JsonResponse({"status": status})
+    '''
 
 
 class Contracts(APIView):
@@ -79,15 +70,27 @@ class Template(APIView):
         r = get_template(template_id)
         return JsonResponse(r, safe=False)
 
+    def put(self, request, template_id, format=None):
+        update_template(template_id, request.data)
+        print("Обновляем шаблон")
+        return HttpResponse(status=200)
+
 
 class Templates(APIView):
-    """List all templates"""
+    """List all templates or create new template"""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         if request.user.email in ADMINS:
             r = get_contract_templates()
             return JsonResponse(r, safe=False)
+
+    def post(self, request):
+        template = request.data['template']
+        service_id = request.data["service"]
+        name = request.data["name"]
+        template = create_new_template(name, service_id, template)
+        return JsonResponse(template, safe=False)
 
 
 class Counterparties(APIView):
@@ -126,9 +129,7 @@ class ContractFields(APIView):
         return JsonResponse(data, safe=False)
 
 
-''' Uploading a file '''
-
-
+''' TODO: Откинуть вообще в другую ветку гита
 class FileUploadAPIView(APIView):
     """Creating new template object"""
     parser_classes = (MultiPartParser, FormParser)
@@ -139,5 +140,5 @@ class FileUploadAPIView(APIView):
         name = request.data["name"]
         template = create_new_template(name, service_id, file_obj)
         return JsonResponse(template, safe=False)
-
+'''
 
