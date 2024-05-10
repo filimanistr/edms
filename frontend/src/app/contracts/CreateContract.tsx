@@ -41,7 +41,7 @@ export function CreateContractWindow(props: any) {
   const router = useRouter();
 
   const handleClose = () => {
-    if (counterparty !== null && template !== null && service !== null && name !== null) {
+    if (counterparty !== null && template !== null && service !== null && name !== "") {
       setDisable(false)
     } else {
       setDisable(true)
@@ -68,6 +68,7 @@ export function CreateContractWindow(props: any) {
                        setCounterparty(null);
                        setTemplate(null);
                        setService(null);
+                       setName("");
                      }}
       >
         <DialogHeader>

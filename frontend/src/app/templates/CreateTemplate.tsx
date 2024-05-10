@@ -33,7 +33,8 @@ export function CreateTemplateWindow(props: any) {
   const router = useRouter();
 
   const handleClose = () => {
-    if (service !== null && name !== null) {
+    console.log("name: ", name, "\nservice", service)
+    if (service !== null && name !== "") {
       setDisable(false)
     } else {
       setDisable(true)
@@ -58,6 +59,7 @@ export function CreateTemplateWindow(props: any) {
                      }}
                      onCloseAutoFocus={() => {
                        setService(null);
+                       setName("");
                      }}
       >
         <DialogHeader>
