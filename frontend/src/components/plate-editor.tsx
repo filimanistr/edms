@@ -364,7 +364,7 @@ export function PlateEditor({text}: any) {
         </FixedToolbar>
 
         <Editor
-          className="h-full rounded-md border p-4 bg-white text-black"
+          className="h-full rounded-md border p-4"
           focusRing={false}
           autoFocus
         />

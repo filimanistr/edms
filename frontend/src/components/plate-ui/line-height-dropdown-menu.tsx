@@ -27,7 +27,7 @@ export function LineHeightDropdownMenu({ ...props }: DropdownMenuProps) {
       <DropdownMenuTrigger asChild>
         <ToolbarButton
           pressed={openState.open}
-          tooltip="Line height"
+          tooltip="Интервал"
           isDropdown
         >
           <Icons.lineHeight />

@@ -43,7 +43,7 @@ export function ColorsCustom({
           })}
           {...menuItemProps}
         >
-          CUSTOM
+          Выбрать свой
         </DropdownMenuItem>
       </ColorInput>
 

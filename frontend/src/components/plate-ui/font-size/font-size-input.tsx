@@ -23,7 +23,7 @@ export function FontSizeInput({ children, ...props }: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       {/* <Input /> */}
       <DropdownMenuTrigger asChild>
-        <ToolbarButton pressed={openState.open} tooltip="Шрифт" isDropdown>
+        <ToolbarButton pressed={openState.open} tooltip="Размер" isDropdown>
           {/* TODO: после ctrl A backspace дефолтный шрифт не добавляется в стили если его не выбрать
                     ни на что не влияет, надо как то сохранять дефолтный всегда
                     внизу заплатка */}

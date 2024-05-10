@@ -63,28 +63,28 @@ export const TableBordersDropdownMenuContent = withRef<
         onCheckedChange={getOnSelectTableBorder('bottom')}
       >
         <Icons.borderBottom className={iconVariants({ size: 'sm' })} />
-        <div>Bottom Border</div>
+        <div>Нижняя граница</div>
       </DropdownMenuCheckboxItem>
       <DropdownMenuCheckboxItem
         checked={hasTopBorder}
         onCheckedChange={getOnSelectTableBorder('top')}
       >
         <Icons.borderTop className={iconVariants({ size: 'sm' })} />
-        <div>Top Border</div>
+        <div>Верхняя груница</div>
       </DropdownMenuCheckboxItem>
       <DropdownMenuCheckboxItem
         checked={hasLeftBorder}
         onCheckedChange={getOnSelectTableBorder('left')}
       >
         <Icons.borderLeft className={iconVariants({ size: 'sm' })} />
-        <div>Left Border</div>
+        <div>Левая граница</div>
       </DropdownMenuCheckboxItem>
       <DropdownMenuCheckboxItem
         checked={hasRightBorder}
         onCheckedChange={getOnSelectTableBorder('right')}
       >
         <Icons.borderRight className={iconVariants({ size: 'sm' })} />
-        <div>Right Border</div>
+        <div>Правая граница</div>
       </DropdownMenuCheckboxItem>
 
       <Separator />
@@ -94,14 +94,14 @@ export const TableBordersDropdownMenuContent = withRef<
         onCheckedChange={getOnSelectTableBorder('none')}
       >
         <Icons.borderNone className={iconVariants({ size: 'sm' })} />
-        <div>No Border</div>
+        <div>Без границы</div>
       </DropdownMenuCheckboxItem>
       <DropdownMenuCheckboxItem
         checked={hasOuterBorders}
         onCheckedChange={getOnSelectTableBorder('outer')}
       >
         <Icons.borderAll className={iconVariants({ size: 'sm' })} />
-        <div>Outside Borders</div>
+        <div>Все границы</div>
       </DropdownMenuCheckboxItem>
     </DropdownMenuContent>
   );
@@ -156,7 +156,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" isMenu>
               <Icons.borderAll className="mr-2 size-4" />
-              Borders
+              Границы
             </Button>
           </DropdownMenuTrigger>
 
@@ -167,7 +167,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
 
         <Button contentEditable={false} variant="ghost" isMenu {...buttonProps}>
           <Icons.delete className="mr-2 size-4" />
-          Delete
+          Удалить
         </Button>
       </>
     );
