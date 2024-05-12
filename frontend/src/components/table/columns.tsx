@@ -23,7 +23,7 @@ export type Contract = {
 export type Service = {
   id: number
   name: string
-  amount: number
+  price: number
   year: number
 }
 
@@ -104,13 +104,13 @@ export const servicesColumns: ColumnDef<Service>[] = [
     header: "Наименование",
   },
   {
-    accessorKey: "amount",
+    accessorKey: "price",
     header: () => <div className="text-right">Цена</div>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"))
-      const formatted = new Intl.NumberFormat("en-US", {
+      const amount = parseFloat(row.getValue("price"))
+      const formatted = new Intl.NumberFormat("ru", {
         style: "currency",
-        currency: "USD",
+        currency: "RUB",
       }).format(amount)
 
       return <div className="text-right font-medium">{formatted}</div>

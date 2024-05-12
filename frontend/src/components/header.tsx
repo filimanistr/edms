@@ -11,8 +11,10 @@ import Link from "next/link"
 import { CircleUser, Package2, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
+
 import {CreateContractWindow} from "@/app/contracts/CreateContract"
 import {CreateTemplateWindow} from "@/app/templates/CreateTemplate";
+import {CreateNewServiceWindow} from "@/app/services/CreateService";
 
 export default async function Header({ page='/'}) {
   return (
@@ -51,6 +53,7 @@ export default async function Header({ page='/'}) {
           >
             Шаблоны
           </Link>
+          {/*
           <Link
             replace
             href="/counterparties"
@@ -61,6 +64,7 @@ export default async function Header({ page='/'}) {
           >
             Контрагенты
           </Link>
+          */}
           <Link
             replace
             href="/services"
@@ -85,16 +89,23 @@ export default async function Header({ page='/'}) {
             { page === "/contracts" &&
                 <CreateContractWindow>
                     <Button variant="ghost" size="sm">
-                        Новый
+                      Новый
                     </Button>
                 </CreateContractWindow>
             }
             { page === "/templates" &&
                 <CreateTemplateWindow>
                     <Button variant="ghost" size="sm">
-                        Новый
+                      Новый
                     </Button>
                 </CreateTemplateWindow>
+            }
+            { page === "/services" &&
+              <CreateNewServiceWindow>
+                  <Button variant="ghost" size="sm">
+                    Новый
+                  </Button>
+              </CreateNewServiceWindow>
             }
           </div>
 

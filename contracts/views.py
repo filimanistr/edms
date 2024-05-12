@@ -119,10 +119,15 @@ class Services(APIView):
         if request.user.email in ADMINS:
             r = get_services()
             return JsonResponse(r, safe=False)
+        return HttpResponse(status=403)
 
     def post(self, request):
-        # TODO: Добавление новых сервисов 
-        pass
+        if request.user.email in ADMINS:
+            r = create_new_service(request.data["name"],
+                               request.data["price"],
+                               request.data["year"])
+            return JsonResponse(r, safe=False)
+        return HttpResponse(status=403)
 
 
 class ContractFields(APIView):

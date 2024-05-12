@@ -11,6 +11,8 @@ from .config import ADMINS
 # Тут описывается вся бизнес логика
 # т.е. Model слой в паттерне MVC
 
+# TODO: Растолкать все по отдельным файлам contract_services скажем
+#       но после рефакторинга всего вот этого вот, может у DRF что круче есть
 
 def get_all_contracts() -> list:
     q = Contract.objects.values("id",
@@ -205,6 +207,16 @@ def get_services() -> list[dict]:
     r = ServicesReference.objects.all().values()
     return list(r)
 
+def create_new_service(name: str, price: int, year) -> None:
+    # TODO: Изучить тему по лучше, помню где то писали как сделать это правильно
+    #       над еще копейки считать 
+    r = ServicesReference.objects.create(
+        name=name,
+        price=price,
+        year=year
+    )
+
+    return model_to_dict(r)
 
 def get_fields() -> dict:
     """Возвращает элементы из которых надо выбрать нужные для нового договора

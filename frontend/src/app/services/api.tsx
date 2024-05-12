@@ -1,16 +1,21 @@
 "use server"
 
 import {cookies} from "next/headers";
+import {makeGetRequest, makePostRequest} from "@/api";
 
 const url: string = "http://localhost:8000/api/services/";
 
 export async function getServices()  {
-  const cookieStore = cookies()
-  const token = cookieStore.get("token")!.value
-  const res = await fetch(url, {
-    headers: {"Authorization": "Token " + token},
-    cache: 'no-cache'
-  });
-
-  return await res.json();
+  return await makeGetRequest(url)
 }
+
+export async function getService(id: number)  {
+  return await makeGetRequest(url+id+'/')
+}
+
+export async function createService(data: object) {
+  return await makePostRequest(url, data);
+}
+
+
+

@@ -6,15 +6,16 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
-import {getContract} from "./api";
+import {getContract} from "../contracts/api";
 import {DownloadButton, EditButton, HistoryButton, SendToAcceptanceButton, WatchButton} from "@/components/buttons";
 import {EditContractWindow} from "@/components/windows/edit-window";
+import {getService} from "@/app/services/api";
 
-export async function AboutContractWindow(props: any) {
+export async function AboutServiceWindow(props: any) {
   const index = props.children.key;
   const old_data = props.data;
   const contract_index = old_data[index].id;
-  const new_data = await getContract(contract_index)
+  const new_data = await getService(contract_index)
 
   return (
     <Dialog>

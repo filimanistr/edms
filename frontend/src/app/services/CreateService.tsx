@@ -13,28 +13,28 @@ import {
 import {Label} from "@/components/ui/label";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {SelectWithSearch} from "@/components/windows";
-import {useRouter} from "next/navigation";
+import {useRouter} from "next/navigation"
+import CurrencyInput from 'react-currency-input-field';
 
-import {createNewTemplate} from "./api";
-import {getServices} from "../services/api"
+import { createService } from "./api";
 
-export function CreateTemplateWindow(props: any) {
+export function CreateNewServiceWindow(props: any) {
+  const currentYear = new Date().getFullYear();
+
   const { toast } = useToast()
   const [disable, setDisable] = useState(true)         // Отображение кнопки сохранения
   const [open, setOpen] = useState(false)               // Отображение формы
   const [show, setShow] = useState(false);              // Отображение строк выбора
-  const [services, setServices] = useState()
 
   // Выбранные значения
   const [name, setName] = useState("");
-  const [service, setService] = useState(null);
+  const [price, setPrice] = useState(0);
+  const [year, setYear] = useState<number>(currentYear);
 
   const router = useRouter();
 
   const handleClose = () => {
-    console.log("name: ", name, "\nservice", service)
-    if (service !== null && name !== "") {
+    if (name !== "" && price !== 0 && year !== 0 ) {
       setDisable(false)
     } else {
       setDisable(true)
@@ -43,7 +43,7 @@ export function CreateTemplateWindow(props: any) {
 
   useEffect(() => {
     handleClose();
-  }, [service, name]);
+  }, [name, price, year]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -54,29 +54,28 @@ export function CreateTemplateWindow(props: any) {
                      autoFocus={false}
                      onOpenAutoFocus={async (event) => {
                        event.preventDefault();
-                       setServices(await getServices())
                        setShow(true);
                      }}
                      onCloseAutoFocus={() => {
-                       setService(null);
                        setName("");
+                       setPrice(0);
+                       setYear(currentYear);
                      }}
       >
         <DialogHeader>
-          <DialogTitle>Создать новый шаблон</DialogTitle>
+          <DialogTitle>Создать новую услугу</DialogTitle>
           <DialogDescription>
-            Необходимо выбрать услугу, для которой создается шаблон договора
+            Необходимо заполнить следующие поля для созздания новой услуги
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="username" className="text-right">
               Название
             </Label>
             <Input type="text"
-                   placeholder="Шаблон #1"
+                   placeholder="Разработка системы"
                    required
                    className=" items-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-[200px] justify-between"
                    onChange={e => setName(e.target.value)}
@@ -84,15 +83,34 @@ export function CreateTemplateWindow(props: any) {
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="username" className="text-right">
-              Услуга
+            <Label htmlFor="name" className="text-right">
+              Цена
             </Label>
-            {show && <SelectWithSearch data={services}
-                                       default_value={"Выбрать услугу"}
-                                       not_found={"Услуга не найдена"}
-                                       value={service}
-                                       setValue={setService}
-            />}
+            <CurrencyInput
+              required
+              id="input-example"
+              name="input-name"
+              placeholder="1000.00"
+              decimalsLimit={2}
+              className="items-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-[200px] justify-between"
+              onValueChange={(value, name, values) => {
+                // console.log(value, name, values)
+                if (values) setPrice(+values.value)
+              }}
+            />
+          </div>
+
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="username" className="text-right">
+              Год
+            </Label>
+            <Input type="number"
+                   defaultValue={year}
+                   placeholder={currentYear.toString()}
+                   required
+                   className=" items-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-[200px] justify-between"
+                   onChange={e => setYear(+e.target.value)}
+            />
           </div>
         </div>
 
@@ -101,18 +119,19 @@ export function CreateTemplateWindow(props: any) {
             type="submit"
             disabled={disable}
             onClick={async () => {
-              await createNewTemplate({
-                service: service,
+              await createService({
                 name: name,
-                template: [{"type":"p","children":[{"text":""}]}],
+                price: price,
+                year: year
               })
 
               router.refresh()
               setOpen(false);
-              setService(null)
-              setName("")
+              setName("");
+              setPrice(0);
+              setYear(0);
               toast({
-                description: "Новый шаблон был создан успешно, требует редактирования"
+                description: "Новая услуга была создана успешно"
               })
             }}
           >
@@ -121,5 +140,6 @@ export function CreateTemplateWindow(props: any) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
   )
 }
