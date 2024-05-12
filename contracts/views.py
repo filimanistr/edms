@@ -75,9 +75,8 @@ class Template(APIView):
         r = get_template(template_id)
         return JsonResponse(r, safe=False)
 
-    def put(self, request, template_id, format=None):
+    def patch(self, request, template_id, format=None):
         update_template(template_id, request.data)
-        print("Обновляем шаблон")
         return HttpResponse(status=200)
 
 

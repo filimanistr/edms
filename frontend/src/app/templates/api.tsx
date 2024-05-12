@@ -1,6 +1,6 @@
 "use server"
 
-import {makeGetRequest, makePostRequest, makePutRequest} from "@/api";
+import {makeGetRequest, makePostRequest, makePutRequest, MakePatchRequest} from "@/api";
 
 const url: string = "http://localhost:8000/api/templates/"
 
@@ -17,5 +17,5 @@ export async function createNewTemplate(data: object) {
 }
 
 export async function updateTemplate(id: number, data: object)  {
-  await makePutRequest(url+id+"/", data)
+  await MakePatchRequest(url+id+"/", data)
 }

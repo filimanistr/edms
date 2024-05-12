@@ -22,7 +22,7 @@ def get_all_contracts() -> list:
                                 "template__name",
                                 "status",
                                 "year")
-    return list(q)
+    return list(q.order_by("id"))
 
 
 def get_contract(contract_id: int) -> dict:
@@ -47,7 +47,7 @@ def get_user_contracts(user_id: int) -> list:
                                 "contract",
                                 "status",
                                 "year").filter(counterparty__id=user_id)
-    return list(q)
+    return list(q.order_by("id"))
 
 
 def create_new_contract(user: str,
@@ -100,7 +100,7 @@ def create_new_template(name: str, service_id: int, template: str) -> dict:
 
 def get_contract_templates() -> list[dict]:
     r = ContractTemplate.objects.values("id", "name", "service__name")
-    return list(r)
+    return list(r.order_by("id"))
 
 
 def get_template(template_id: int) -> dict:
@@ -165,9 +165,7 @@ def update_contract_status_by_the_client(user,
 
 
 def update_template(template_id: int, data: list) -> None:
-    template = ContractTemplate.objects.get(pk=template_id)
-    template.template = data
-    template.save()
+    ContractTemplate.objects.filter(pk=template_id).update(template=data)
 
 
 def update_contract_status(username: str, contract_id: int) -> None:
@@ -182,6 +180,7 @@ def update_contract_status(username: str, contract_id: int) -> None:
         return
 
     contract.save()
+
 
 def update_contract(user: str, contract_id: int, new_contract: list) -> None:
     contract = Contract.objects.get(pk=contract_id)
@@ -200,12 +199,13 @@ def update_contract(user: str, contract_id: int, new_contract: list) -> None:
 
 def get_all_counterparties() -> list[dict]:
     r = Counterparty.objects.all().values()
-    return list(r)
+    return list(r.order_by("id"))
 
 
 def get_services() -> list[dict]:
     r = ServicesReference.objects.all().values()
-    return list(r)
+    return list(r.order_by("id"))
+
 
 def create_new_service(name: str, price: int, year) -> None:
     # TODO: Изучить тему по лучше, помню где то писали как сделать это правильно
@@ -217,6 +217,7 @@ def create_new_service(name: str, price: int, year) -> None:
     )
 
     return model_to_dict(r)
+
 
 def get_fields() -> dict:
     """Возвращает элементы из которых надо выбрать нужные для нового договора
