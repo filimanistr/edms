@@ -27,10 +27,12 @@ export function TemplateEditor({text, data, update}: any) {
         readOnly
       >
 
+        { data.is_admin &&
         <TemplateActions
-          data={data}
+          data={data.data}
           update={update}
         />
+        }
 
         <FixedToolbar>
           <FixedToolbarButtons/>

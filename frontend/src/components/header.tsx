@@ -16,7 +16,7 @@ import {CreateContractWindow} from "@/app/contracts/CreateContract"
 import {CreateTemplateWindow} from "@/app/templates/CreateTemplate";
 import {CreateNewServiceWindow} from "@/app/services/CreateService";
 
-export default async function Header({ page='/'}) {
+export default async function Header({ page='/', is_admin = false}) {
   return (
       <header className="top-0 z-10 items-center gap-4 border-b bg-background px-4">
         <div className="flex top-0 h-16 max-w-7xl mx-auto">
@@ -93,14 +93,14 @@ export default async function Header({ page='/'}) {
                     </Button>
                 </CreateContractWindow>
             }
-            { page === "/templates" &&
+            { (page === "/templates" && is_admin) &&
                 <CreateTemplateWindow>
                     <Button variant="ghost" size="sm">
                       Новый
                     </Button>
                 </CreateTemplateWindow>
             }
-            { page === "/services" &&
+            { (page === "/services" && is_admin ) &&
               <CreateNewServiceWindow>
                   <Button variant="ghost" size="sm">
                     Новый

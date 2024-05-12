@@ -72,7 +72,9 @@ class Template(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, template_id, format=None):
-        r = get_template(template_id)
+        r = dict()
+        r["is_admin"] = request.user.email in ADMINS
+        r["data"] = get_template(template_id)
         return JsonResponse(r, safe=False)
 
     def patch(self, request, template_id, format=None):
@@ -85,9 +87,10 @@ class Templates(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if request.user.email in ADMINS:
-            r = get_contract_templates()
-            return JsonResponse(r, safe=False)
+        r = dict()
+        r["is_admin"] = request.user.email in ADMINS
+        r["data"] = get_contract_templates()
+        return JsonResponse(r, safe=False)
 
     def post(self, request):
         template = request.data['template']
@@ -115,10 +118,10 @@ class Services(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if request.user.email in ADMINS:
-            r = get_services()
-            return JsonResponse(r, safe=False)
-        return HttpResponse(status=403)
+        r = dict()
+        r["is_admin"] = request.user.email in ADMINS
+        r["data"] = get_services()
+        return JsonResponse(r, safe=False)
 
     def post(self, request):
         if request.user.email in ADMINS:

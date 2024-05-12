@@ -4,7 +4,7 @@ import {getServices} from "../api";
 export default async function ServicePage({params}: any) {
   // Пока что только так, потом исправить
   let data = await getServices();
-  data = data.find((x: any) => x.id == params.id)
+  data = data.data.find((x: any) => x.id == params.id)
   const page: string = "/services";
 
   return (
