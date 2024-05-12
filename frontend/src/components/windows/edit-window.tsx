@@ -13,7 +13,11 @@ import {Button} from "@/components/ui/button";
 import {useState} from "react";
 
 // Редактор
-import {PlateEditor} from "@/components/plate-editor";
+
+// TODO: Тут свой редактор нужен пустой новый для просмотра новосозданных
+// import {PlateEditor} from "@/app/contracts/[id]/plate-editor";
+
+
 
 // Запросы
 import {getTemplate} from "@/app/templates/api";
@@ -89,7 +93,7 @@ export function EditTemplateWindow(props: any) {
         </div>
 
         <div className="h-full space-y-1">
-          <PlateEditor/>
+          {/* <PlateEditor/> */}
         </div>
       </DialogContent>
     </Dialog>

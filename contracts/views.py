@@ -1,8 +1,6 @@
 ﻿from django.http import JsonResponse, HttpResponse
 from rest_framework.permissions import IsAuthenticated
-
 from rest_framework.views import APIView
-from rest_framework.parsers import MultiPartParser, FormParser
 
 from .services import *
 
@@ -15,24 +13,29 @@ class Contract(APIView):
 
     def get(self, request, contract_id, format=None):
         r = get_contract(contract_id)
+        if request.user.email in ADMINS:
+            r["role"] = "admin"
+        else:
+            r["role"] = "user"
+
         return JsonResponse(r)
 
-    def put(self, request, contract_id, format=None):
+    def patch(self, request, contract_id, format=None):
+        """Варианта 2: обновление статуса клиентом
+                       обновление статуса сервером
+                       выбран последний"""
         email = request.user.email
-        update_contract(contract_id, request.data)
-        return HttpResponse(status=200)
 
-    '''
-    def put(request):
-        # TODO: Решить что то завтра по статусу
-        #       кидать его в PUT не правильная тема чето
-        """Sets contract's status"""
-        put = QueryDict(request.body)
-        contract_id = put.get("contract")
-        email = request.user.email
-        status = update_contract_status(contract_id, email)
-        return JsonResponse({"status": status})
-    '''
+        # Обновление контракта
+        if "contract" in request.data:
+            contract = request.data["contract"]
+            update_contract(email, contract_id, contract)
+
+        # Обновление статуса контракта
+        if "status" in request.data:
+            update_contract_status(email, contract_id)
+
+        return HttpResponse(status=200)
 
 
 class Contracts(APIView):
@@ -51,11 +54,13 @@ class Contracts(APIView):
 
     def post(self, request):
         """Creates new contract, sets all the fields"""
+        email = request.user.email
         c = request.data["counterparty"]
         s = request.data["service"]
         t = request.data["template"]
         n = request.data["name"]
-        contract = create_new_contract(counterparty_id=c,
+        contract = create_new_contract(user=email,
+                                       counterparty_id=c,
                                        service_id=s,
                                        template_id=t,
                                        name=n)

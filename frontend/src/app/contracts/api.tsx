@@ -1,7 +1,7 @@
 "use server"
 
 import {Contract} from "@/components/table/columns";
-import {makeGetRequest, makePostRequest, makePutRequest} from "@/api";
+import {makeGetRequest, MakePatchRequest, makePostRequest, makePutRequest} from "@/api";
 
 const url: string = "http://localhost:8000/api/contracts/"
 
@@ -18,7 +18,8 @@ export async function createNewContract(data: object) {
 }
 
 export async function updateContract(id: number, data: object)  {
-  await makePutRequest(url+id+"/", data)
+  // Обновляет как состояние так и сам контракт
+  await MakePatchRequest(url+id+"/", data)
 }
 
 export async function getFields() {

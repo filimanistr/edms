@@ -1,6 +1,6 @@
 import Header from "@/components/header";
-import {DocManagement} from "@/components/doc-management";
 import { getContract, updateContract } from "../api";
+import { ContractEditor } from "./editor";
 
 export default async function ContractPage({params}: any) {
   const page: string = "/contracts"
@@ -24,11 +24,10 @@ export default async function ContractPage({params}: any) {
           <br/>
         </p>
 
-        <DocManagement
-          page={page}
-          id={data.id}
+        <ContractEditor
           text={data.contract}
-          updateDoc={updateContract}
+          data={data}
+          update={updateContract}
         />
       </main>
     </>

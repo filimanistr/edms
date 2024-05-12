@@ -16,7 +16,7 @@ export type Contract = {
   counterparty__name: string
   template__name: string
   template__id: number
-  status: "ожидает согласования заказчиком" | "ожидает согласование поставщиком" | "согласован" | "черновик"
+  status: "ожидает согласования заказчиком" | "ожидает согласование поставщиком" | "согласован"
   year: number
 }
 

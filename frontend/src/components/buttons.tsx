@@ -1,3 +1,5 @@
+"use client"
+
 // Подскажки при наведении на кнопку
 import {
   Tooltip,
@@ -14,13 +16,23 @@ import {
   ArrowUpToLine,
   History,
   Trash2,
-  FileUp,
-  FileDown
 } from "lucide-react"
 
 // UI
 import {Button} from "@/components/ui/button";
 import { Loader2 } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import Link from "next/link";
 
 
 // Кнопки иконки
@@ -60,15 +72,31 @@ export function HistoryButton({onclick}: any) {
 
 export function DeleteButton() {
   return (
-    <Button variant="outline" size="sm">
-      <Trash2 size={18} color="#d11a2a" className="mr-2 h-4 w-4"/> Удалить
-    </Button>
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Trash2 size={18} color="#d11a2a" className="mr-2 h-4 w-4"/> Удалить
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Вы уверенны что хотите удалить этот договор?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Это действие нельзя будет отменить. Информация будет утеряна безвозвратно
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Отменить</AlertDialogCancel>
+          <AlertDialogAction>Продолжить</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 
-export function EditButton() {
+export function EditButton({onclick}: any) {
   return (
-    <Button variant="outline" size="sm">
+    <Button variant="outline" size="sm" onClick={onclick}>
       <PenLine size={18} className="mr-2 h-4 w-4"/> Редактор
     </Button>
   )
@@ -103,16 +131,60 @@ export function ButtonLoading() {
   )
 }
 
-export function SendToAcceptanceButton() {
+
+export function AcceptButton({page, handle}: any) {
   return (
-    <Button type="submit">Отправить</Button>
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button type="submit" size="sm">
+          Согласовать
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Согласовать договор?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Внести новые изменения в договор после согласования будет не возможно
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Отменить</AlertDialogCancel>
+          <Link replace href={page}>
+            <AlertDialogAction onClick={handle}>
+              Продолжить
+            </AlertDialogAction>
+          </Link>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 
-export function AcceptButton() {
+export function SendToAcceptanceButton({page, handle}: any) {
   return (
-    <Button type="submit">Согласовать</Button>
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button type="submit" size="sm">
+          Отправить
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Отправить догоовр на согласование?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Догоовр будет отправлен на согласование, изменить его будет не возможно
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Отменить</AlertDialogCancel>
+          <Link replace href={page}>
+            <AlertDialogAction onClick={handle}>
+              Продолжить
+            </AlertDialogAction>
+          </Link>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
-
 

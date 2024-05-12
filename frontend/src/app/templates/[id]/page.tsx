@@ -1,6 +1,6 @@
 import Header from "@/components/header";
-import {DocManagement} from "@/components/doc-management"
-import {getTemplate, updateTemplate} from "../api";
+import { TemplateEditor } from "./editor";
+import { getTemplate, updateTemplate } from "../api";
 
 export default async function TemplatePage({params}: any) {
   const page: string = "/templates"
@@ -20,11 +20,10 @@ export default async function TemplatePage({params}: any) {
           Услуга: {data.service__name} <br/><br/>
         </p>
 
-        <DocManagement
-          page={page}
-          id={data.id}
+        <TemplateEditor
           text={data.template}
-          updateDoc={updateTemplate}
+          data={data}
+          update={updateTemplate}
         />
       </main>
     </>

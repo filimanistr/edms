@@ -56,3 +56,21 @@ export async function makePutRequest(url: string, data: any) {
     }
   )
 }
+
+export async function MakePatchRequest(url: string, data: any) {
+  const cookieStore = cookies()
+  const token =  cookieStore.get("token")!.value
+
+  let headers =  {
+    "Content-type": "application/json",
+    "Authorization": "Token " + token
+  }
+
+  const res = await fetch(url, {
+      method: "PATCH",
+      headers: headers,
+      body: JSON.stringify(data),
+      cache: 'no-store'
+    }
+  )
+}

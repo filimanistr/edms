@@ -44,23 +44,33 @@ def get_user_contracts(user_id: int) -> list:
                                 "template__name",
                                 "contract",
                                 "status",
-                                "year").get(counterparty_id=user_id)
-    return q
+                                "year").filter(counterparty__id=user_id)
+    return list(q)
 
 
-def create_new_contract(counterparty_id: int, service_id: int, template_id: int, name: str) -> dict:
+def create_new_contract(user: str,
+                        counterparty_id: int,
+                        service_id: int,
+                        template_id: int,
+                        name: str) -> dict:
     counterparty = Counterparty.objects.get(id=counterparty_id)
     service = ServicesReference.objects.get(id=service_id)
     template = ContractTemplate.objects.get(id=template_id)
-    # TODO: Тут должно исправлять template и исправленный вставлять в контракт
-    #       новый статус черновик
+
+    # TODO: Тут должно быть формирование договора
+
+    if user in ADMINS:
+        status = "ожидает согласования заказчиком"
+    else:
+        status = "ожидает согласования поставщиком"
+
     q = Contract.objects.create(
         counterparty=counterparty,
         template=template,
         name=name,
         contract=template.template,
         year=timezone.now().year,
-        status="черновик"
+        status=status
     )
 
     r = model_to_dict(q)
@@ -99,20 +109,43 @@ def get_template(template_id: int) -> dict:
                                         "service__name").get(pk=template_id)
     return q
 
-# FIXME: Вынести в отдельные функции преобразование статусов
-#        Внесение правок и согласование по разному влияют на статус
 
-def update_contract(contract_id: int, data: list) -> None:
+def update_contract_status_by_the_client(user,
+                                         contract_id: int,
+                                         status: str,
+                                         new_contract: list) -> None:
+    """Статус прилетает с клиента и его мы выставляем"""
+    """DEPRECATED"""
     contract = Contract.objects.get(pk=contract_id)
-    contract.contract = data
-    contract.save()
+    allowed_statuses = ["согласован",
+                        "ожидает согласования заказчиком",
+                        'ожидает согласования поставщиком']
 
-    ''' FIXME: Старая тема с обновлением статуса
-    if username in ADMINS:
-        status = "ожидает согласования заказчиком"
-    else:
-        status = "ожидает согласования поставщиком"
+    if status not in allowed_statuses:
+        return
 
+    # ОС_ => ожидает согласования _
+    # ловим конкретно внесение правок, это когда было ОС_ стало ОС_
+    if status.rsplit(" ", 1)[0] == "ожидает согласования":
+        if contract.status == "согласован":
+            print("Попытка выставления ОС согласованному договору")
+            return
+
+        # елси статус контракта не "согласован" то значит он ОС
+        if status == contract.status:
+            print("Попытка выставления одного и того же статуса второй раз")
+            return
+
+        # новый статус == ОС и старый статус == ОС то есть обновление
+        contract.contract = new_contract
+        contract.status = status
+        contract.save()
+        return
+
+    if contract.status == "согласован":
+        return
+
+    ''' FIXME: Версионирование
     try:
         last = ContractsHistory.objects.annotate(Max('version')).get(contract_id=contract_id)
         version = last.version + 1
@@ -126,10 +159,6 @@ def update_contract(contract_id: int, data: list) -> None:
         version=version,
         status=contract.status
     )
-
-    contract.contract = data
-    contract.status = status
-    contract.save()
     '''
 
 
@@ -139,20 +168,32 @@ def update_template(template_id: int, data: list) -> None:
     template.save()
 
 
-def update_contract_status(contract_id: int, username: str) -> str:
-    # FIXME
-    """Обновляет статус контракта относительно того
-    какой `username` обновляет его, и возвращает новый"""
-    contract = Contract.objects.get(id=contract_id)
+def update_contract_status(username: str, contract_id: int) -> None:
+    contract = Contract.objects.get(pk=contract_id)
     if (username in ADMINS) and (contract.status == "ожидает согласования поставщиком"):
         contract.status = "согласован"
     elif (username not in ADMINS) and (contract.status == "ожидает согласования заказчиком"):
-        contract.status = "ожидает согласования поставщиком"
+        contract.status = "согласован"
     else:
-        return contract.status
+        print("попытка согласования согласованного договора")
+        print("или согласования договора лицом, не имеющем на это привелегии")
+        return
 
     contract.save()
-    return contract.status
+
+def update_contract(user: str, contract_id: int, new_contract: list) -> None:
+    contract = Contract.objects.get(pk=contract_id)
+    if contract.status == "ожидает согласования поставщиком":
+        status = "ожидает согласования заказчиком"
+    elif contract.status == "ожидает согласования заказчиком":
+        status = "ожидает согласования поставщиком"
+    elif contract.status == "согласован":
+        print("попытка изменения согласованного контракта")
+        return
+
+    contract.contract = new_contract
+    contract.status = status
+    contract.save()
 
 
 def get_all_counterparties() -> list[dict]:
