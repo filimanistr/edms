@@ -95,7 +95,7 @@ export function CreateContractWindow(props: any) {
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-3 items-center gap-4">
             <Label htmlFor="username" className="text-right">
               Название
             </Label>
@@ -108,7 +108,7 @@ export function CreateContractWindow(props: any) {
           </div>
 
           { isAdmin &&
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-3 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Контрагент
             </Label>
@@ -121,7 +121,7 @@ export function CreateContractWindow(props: any) {
           </div>
           }
 
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-3 items-center gap-4">
             <Label htmlFor="username" className="text-right">
               Услуга
             </Label>
@@ -135,7 +135,7 @@ export function CreateContractWindow(props: any) {
             />}
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-3 items-center gap-4">
             <Label htmlFor="username" className="text-right">
               Шаблоны
             </Label>

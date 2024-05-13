@@ -36,7 +36,7 @@ export function SelectWithSearch({data, default_value, not_found, value, setValu
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-[200px] justify-between"
+            className="w-[200px] justify-between col-span-2"
           >
             {value
               ? data.find((item:any) => item.id === value)?.name

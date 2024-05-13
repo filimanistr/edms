@@ -50,7 +50,7 @@ export function CreateTemplateWindow(props: any) {
       <DialogTrigger asChild>
         {props.children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]"
+      <DialogContent className="sm:max-w-[400px]"
                      autoFocus={false}
                      onOpenAutoFocus={async (event) => {
                        event.preventDefault();
@@ -72,19 +72,19 @@ export function CreateTemplateWindow(props: any) {
 
         <div className="grid gap-4 py-4">
 
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-3 items-center gap-4">
             <Label htmlFor="username" className="text-right">
               Название
             </Label>
             <Input type="text"
                    placeholder="Шаблон #1"
                    required
-                   className=" items-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-[200px] justify-between"
+                   className="col-span-2 items-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-[200px] justify-between"
                    onChange={e => setName(e.target.value)}
             />
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-3 items-center gap-4">
             <Label htmlFor="username" className="text-right">
               Услуга
             </Label>
@@ -105,7 +105,7 @@ export function CreateTemplateWindow(props: any) {
               await createNewTemplate({
                 service: service,
                 name: name,
-                template: [{"type":"p","children":[{"text":""}]}],
+                template: [{"type": "p", "children": [{"text": ""}]}],
               })
 
               router.refresh()

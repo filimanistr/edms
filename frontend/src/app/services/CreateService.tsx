@@ -70,7 +70,7 @@ export function CreateNewServiceWindow(props: any) {
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-3 items-center gap-4">
             <Label htmlFor="username" className="text-right">
               Название
             </Label>
@@ -82,7 +82,7 @@ export function CreateNewServiceWindow(props: any) {
             />
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-3 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Цена
             </Label>
@@ -91,6 +91,7 @@ export function CreateNewServiceWindow(props: any) {
               id="input-example"
               name="input-name"
               placeholder="1000.00"
+              allowNegativeValue={false}
               decimalsLimit={2}
               className="items-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-[200px] justify-between"
               onValueChange={(value, name, values) => {
@@ -100,7 +101,7 @@ export function CreateNewServiceWindow(props: any) {
             />
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-3 items-center gap-4">
             <Label htmlFor="username" className="text-right">
               Год
             </Label>
