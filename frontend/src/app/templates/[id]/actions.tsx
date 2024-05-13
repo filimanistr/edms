@@ -26,7 +26,7 @@ export function TemplateActions({data, update}: any) {
           <PenLine size={18} className="mr-2 h-4 w-4"/> Редактор
         </Button>
         <HistoryButton/> {/* TODO: Открывать окно истории */}
-        <DeleteButton/>
+        {/* <DeleteButton/> */}
       </div>
 
       <div className="ml-auto flex gap-2">

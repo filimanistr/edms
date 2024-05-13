@@ -3,8 +3,11 @@ import {AcceptButton, DeleteButton, HistoryButton, SendToAcceptanceButton} from 
 import Link from "next/link";
 import {Button} from "@/components/ui/button";
 import {PenLine} from "lucide-react";
+import {useState} from "react";
 
 export function ContractActions({data, update}: any) {
+  const [show, setShow] = useState(false);
+
   const editor = useEditorRef()
   const setReadOnly = usePlateStore().set.readOnly();
   const readOnly = useEditorReadOnly();
@@ -42,13 +45,14 @@ export function ContractActions({data, update}: any) {
           size="sm"
           onClick={() => {
             setReadOnly(!readOnly)
+            setShow(true)
           }}
         >
           <PenLine size={18} className="mr-2 h-4 w-4"/> Редактор
         </Button>
 
         <HistoryButton/> {/* TODO: Открывать окно истории */}
-        { data.role === "admin" && <DeleteButton/> }
+        {/* data.role === "admin" && <DeleteButton/> */}
       </div>
 
       <div className="ml-auto flex gap-2">
@@ -61,17 +65,17 @@ export function ContractActions({data, update}: any) {
         }
 
         {(
-          (data.status === "ожидает согласования поставщиком" && data.role === "admin" && readOnly) ||
-          (data.status === "ожидает согласования заказчиком" && data.role === "user" && readOnly)
+          (data.status === "ожидает согласования поставщиком" && data.role === "admin" && !show) ||
+          (data.status === "ожидает согласования заказчиком" && data.role === "user" && !show)
           )
           && <AcceptButton page="/contracts" handle={handleUpdateStatus}/>
         }
 
-        {(data.status === "ожидает согласования поставщиком" && data.role === "admin" && !readOnly)
+        {(data.status === "ожидает согласования поставщиком" && data.role === "admin" && show)
           && <SendToAcceptanceButton page="/contracts" handle={handleUpdateContract}/>
         }
 
-        {(data.status === "ожидает согласования заказчиком" && data.role === "user" && !readOnly)
+        {(data.status === "ожидает согласования заказчиком" && data.role === "user" && show)
           && <SendToAcceptanceButton page="/contracts" handle={handleUpdateContract}/>
         }
 
