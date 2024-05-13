@@ -18,7 +18,7 @@ import {CreateNewServiceWindow} from "@/app/services/CreateService";
 
 export default async function Header({ page='/', is_admin = false}) {
   return (
-      <header className="top-0 z-10 items-center gap-4 border-b bg-background px-4">
+      <header className="top-0 z-10 items-center gap-4 border-b bg-background px-24">
         <div className="flex top-0 h-16 max-w-7xl mx-auto">
         <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
 
@@ -80,46 +80,20 @@ export default async function Header({ page='/', is_admin = false}) {
         <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
           {/* Новый объект */}
           <div className="ml-auto text-muted-foreground">
-            {/*
-                TODO: Бред, переделать надо по совету ниже
-                      окна делать динамик компонентами и вызывал от события стейта.
-                      Надо разбираться с Next.js тогда и реакт в целом
-            */}
 
-            { page === "/contracts" &&
-                <CreateContractWindow>
-                    <Button variant="ghost" size="sm">
-                      Новый
-                    </Button>
-                </CreateContractWindow>
-            }
-            { (page === "/templates" && is_admin) &&
-                <CreateTemplateWindow>
-                    <Button variant="ghost" size="sm">
-                      Новый
-                    </Button>
-                </CreateTemplateWindow>
-            }
-            { (page === "/services" && is_admin ) &&
-              <CreateNewServiceWindow>
-                  <Button variant="ghost" size="sm">
-                    Новый
-                  </Button>
-              </CreateNewServiceWindow>
-            }
           </div>
 
-          {/* Строка поиска */}
+          {/* Строка поиска */} {/*
           <form className="flex-1 sm:flex-initial ">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"/>
               <Input
                 type="search"
                 placeholder="Поиск"
-                className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
+                className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px] focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 "
               />
             </div>
-          </form>
+          </form> */}
 
           {/* Изменеие темы */}
           <ModeToggle/>

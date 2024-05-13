@@ -49,6 +49,7 @@ export const columns: ColumnDef<Contract>[] = [
     header: ({ column }) => {
       return (
         <Button
+          className="focus-visible:ring-1 focus-visible:ring-offset-0"
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
@@ -65,6 +66,9 @@ export const columns: ColumnDef<Contract>[] = [
   {
     accessorKey: "status",
     header: "Статус",
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
+    },
   },
   {
     accessorKey: "year",
@@ -105,7 +109,18 @@ export const servicesColumns: ColumnDef<Service>[] = [
   },
   {
     accessorKey: "price",
-    header: () => <div className="text-right">Цена</div>,
+    header: ({ column }) => {
+      return (
+        <Button
+          className="focus-visible:ring-1 focus-visible:ring-offset-0 float-right"
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Цена
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("price"))
       const formatted = new Intl.NumberFormat("ru", {

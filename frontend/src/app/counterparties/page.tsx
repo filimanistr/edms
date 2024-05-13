@@ -10,7 +10,7 @@ export default async function Page() {
   return (
     <>
       <Header page={page}/>
-      <main className="flex min-h-screen max-w-7xl mx-auto flex-col items-center justify-between p-24">
+      <main className="px-24 pb-24 pt-12 flex min-h-screen max-w-7xl mx-auto flex-col items-center justify-between p-24">
         <DataTable page={page} columns={columns} data={data}/>
       </main>
     </>

@@ -21,20 +21,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
 import { DataTablePagination} from "@/components/table/data-table-pagination";
 import { useRouter } from "next/navigation"
+import {DataTableToolbar} from "@/components/table/data-table-toolbar";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   page: string
+  is_admin?: boolean
 }
 
 export function DataTable<TData, TValue>({
                                            columns,
                                            data,
                                            page,
+                                           is_admin = false,
                                          }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -59,21 +61,8 @@ export function DataTable<TData, TValue>({
 
   return (
     <>
-      {/* Фильтрация */}
-      <div className="flex items-center py-4 w-full">
-        <Input
-          placeholder="Фильтровать контрагентов..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-      </div>
-
-      {/* Таблица */}
-      {/* Обводка: className="rounded-md border" */}
-      <div className="outline-none">
+      <DataTableToolbar table={table} page={page} is_admin={is_admin}/>
+      <div className="outline-none rounded-md border">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

@@ -54,7 +54,8 @@ export function CreateTemplateWindow(props: any) {
                      autoFocus={false}
                      onOpenAutoFocus={async (event) => {
                        event.preventDefault();
-                       setServices(await getServices())
+                       const d = await getServices()
+                       setServices(d.data)
                        setShow(true);
                      }}
                      onCloseAutoFocus={() => {
