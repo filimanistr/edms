@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from .services import *
 
 # TODO: Тут нужны drf generic base classes 
+# TODO: Мб эту тему тоже надо разделить по django apps 
 
 
 class Contract(APIView):
@@ -59,6 +60,10 @@ class Contracts(APIView):
         s = request.data["service"]
         t = request.data["template"]
         n = request.data["name"]
+
+        if email not in ADMINS:
+            c = request.user.id
+
         contract = create_new_contract(user=email,
                                        counterparty_id=c,
                                        service_id=s,
@@ -137,8 +142,12 @@ class ContractFields(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        data = get_fields()
-        return JsonResponse(data, safe=False)
+        r = dict()
+        r["is_admin"] = request.user.email in ADMINS
+        r["data"] = get_fields()
+        if request.user.email not in ADMINS:
+            r["data"]["counterparties"] = None
+        return JsonResponse(r, safe=False)
 
 
 ''' TODO: Откинуть вообще в другую ветку гита

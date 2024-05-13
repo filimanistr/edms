@@ -23,6 +23,7 @@ import {createNewContract, getFields} from "./api";
 export function CreateContractWindow(props: any) {
   // Отображает только те шаблоны которые соответсвуют услуге
   const { toast } = useToast()
+  const [isAdmin, setIsAdmin] = useState(false)
   const [disable, setDisable] = useState(true)         // Отображение кнопки сохранения
   const [open, setOpen] = useState(false)               // Отображение формы
   const [show, setShow] = useState(false);              // Отображение строк выбора
@@ -48,8 +49,20 @@ export function CreateContractWindow(props: any) {
     }
   }
 
+  const handleUserClose = () => {
+    if (template !== null && service !== null && name !== "") {
+      setDisable(false)
+    } else {
+      setDisable(true)
+    }
+  }
+
   useEffect(() => {
-    handleClose();
+    if (isAdmin) {
+      handleClose();
+    } else {
+      handleUserClose();
+    }
   }, [counterparty, template, service, name]);
 
   return (
@@ -61,7 +74,10 @@ export function CreateContractWindow(props: any) {
                      autoFocus={false}
                      onOpenAutoFocus={async (event) => {
                        event.preventDefault();
-                       setData(await getFields())
+                       const all_data = await getFields()
+                       setData(all_data.data)
+                       setIsAdmin(all_data.is_admin)
+
                        setShow(true);
                      }}
                      onCloseAutoFocus={() => {
@@ -74,7 +90,7 @@ export function CreateContractWindow(props: any) {
         <DialogHeader>
           <DialogTitle>Создать новый договор</DialogTitle>
           <DialogDescription>
-            Необходимо выбрать контрагента, услугу и шаблон, соответсвующий услуге, на основе которого будет сформирован договор
+            Необходимо выбрать { isAdmin && "контрагента," } услугу и шаблон, соответсвующий услуге, на основе которого будет сформирован договор
           </DialogDescription>
         </DialogHeader>
 
@@ -91,6 +107,7 @@ export function CreateContractWindow(props: any) {
             />
           </div>
 
+          { isAdmin &&
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Контрагент
@@ -101,8 +118,8 @@ export function CreateContractWindow(props: any) {
                                        value={counterparty}
                                        setValue={setCounterparty}
             />}
-
           </div>
+          }
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="username" className="text-right">
