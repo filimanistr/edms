@@ -102,6 +102,7 @@ export const servicesColumns: ColumnDef<Service>[] = [
   {
     accessorKey: "id",
     header: "#",
+    cell: ({ row }) => row.index + 1
   },
   {
     accessorKey: "name",
