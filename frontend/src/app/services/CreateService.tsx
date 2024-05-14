@@ -120,11 +120,20 @@ export function CreateNewServiceWindow(props: any) {
             type="submit"
             disabled={disable}
             onClick={async () => {
-              await createService({
+              let response = await createService({
                 name: name,
                 price: price,
                 year: year
               })
+
+              if ('success' in response) {
+                toast({
+                  variant: "destructive",
+                  title: response.title,
+                  description: response.description,
+                })
+                return
+              }
 
               router.refresh()
               setOpen(false);

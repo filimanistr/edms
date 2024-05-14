@@ -1,6 +1,8 @@
 ﻿from django.http import JsonResponse, HttpResponse
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import status
 
 from .services import *
 
@@ -69,6 +71,18 @@ class Contracts(APIView):
                                        service_id=s,
                                        template_id=t,
                                        name=n)
+
+        if contract is None:
+            if email in ADMINS:
+                msg = "Договор с таким именем для этого контрагента уже существует"
+            else:
+                msg = "Договор с таким именем уже существует"
+            return Response({
+                "success": False,
+                "title": msg,
+                "description": "Измените название договора"
+                }, status=status.HTTP_409_CONFLICT)
+
         return JsonResponse(contract, safe=False)
 
 
@@ -98,11 +112,22 @@ class Templates(APIView):
         return JsonResponse(r, safe=False)
 
     def post(self, request):
-        template = request.data['template']
-        service_id = request.data["service"]
-        name = request.data["name"]
-        template = create_new_template(name, service_id, template)
-        return JsonResponse(template, safe=False)
+        if request.user.email in ADMINS:
+            template = request.data['template']
+            service_id = request.data["service"]
+            name = request.data["name"]
+            template = create_new_template(name, service_id, template)
+
+            # TODO: Куда то бы вынести все эти сообщения в файлик отдельный,
+            if template is None:
+                return Response({
+                    "success": False,
+                    "title": "Шаблон с таким именем уже существует для данной услуги",
+                    "description": "Измените название шаблона или выберите другую услугу"
+                    }, status=status.HTTP_409_CONFLICT)
+
+            return JsonResponse(template, safe=False)
+        return HttpResponse(status=403)
 
 
 class Counterparties(APIView):
@@ -133,6 +158,13 @@ class Services(APIView):
             r = create_new_service(request.data["name"],
                                request.data["price"],
                                request.data["year"])
+
+            if r is None:
+                return Response({
+                    "success": False,
+                    "title": "Услуга с таким именем уже существует",
+                    "description": "Измените название услуги на уникальное"
+                    }, status=status.HTTP_409_CONFLICT)
             return JsonResponse(r, safe=False)
         return HttpResponse(status=403)
 

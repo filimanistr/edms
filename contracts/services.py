@@ -66,36 +66,42 @@ def create_new_contract(user: str,
     else:
         status = "ожидает согласования поставщиком"
 
-    q = Contract.objects.create(
-        counterparty=counterparty,
-        template=template,
+    # don't create contracts with same name for one counterparty
+    obj, created = Contract.objects.get_or_create(
         name=name,
-        contract=template.template,
-        year=timezone.now().year,
-        status=status
+        counterparty=counterparty,
+        defaults={
+            "template": template,
+            "contract": template.template,
+            "year": timezone.now().year,
+            "status": status
+        }
     )
 
-    r = model_to_dict(q)
+
+    # TODO: вот тут бы свою ошибку сделать
+    if not created: return None
+
+    r = model_to_dict(obj)
     r["counterparty__name"] = counterparty.name
     r["template__name"] = template.name
     return r
 
 
 def create_new_template(name: str, service_id: int, template: str) -> dict:
-    '''
-    data = b''
-    for chunk in file.chunks():
-        data += chunk
-    '''
-
     service = ServicesReference.objects.get(id=service_id)
-    q = ContractTemplate.objects.create(
+
+    # don't create template with same name for one service
+    obj, created = ContractTemplate.objects.get_or_create(
         name=name,
-        template=template,
-        service=service
+        service=service,
+        defaults={
+            "template":template
+        }
     )
 
-    return model_to_dict(q)
+    if not created: return None
+    return model_to_dict(obj)
 
 
 def get_contract_templates() -> list[dict]:
@@ -210,13 +216,16 @@ def get_services() -> list[dict]:
 def create_new_service(name: str, price: int, year) -> None:
     # TODO: Изучить тему по лучше, помню где то писали как сделать это правильно
     #       над еще копейки считать 
-    r = ServicesReference.objects.create(
+    obj, created = ServicesReference.objects.get_or_create(
         name=name,
-        price=price,
-        year=year
+        defaults={
+            "price":price,
+            "year":year
+        }
     )
 
-    return model_to_dict(r)
+    if not created: return None
+    return model_to_dict(obj)
 
 
 def get_fields() -> dict:

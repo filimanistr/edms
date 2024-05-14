@@ -102,11 +102,20 @@ export function CreateTemplateWindow(props: any) {
             type="submit"
             disabled={disable}
             onClick={async () => {
-              await createNewTemplate({
+              let response = await createNewTemplate({
                 service: service,
                 name: name,
                 template: [{"type": "p", "children": [{"text": ""}]}],
               })
+
+              if ('success' in response) {
+                toast({
+                  variant: "destructive",
+                  title: response.title,
+                  description: response.description,
+                })
+                return
+              }
 
               router.refresh()
               setOpen(false);

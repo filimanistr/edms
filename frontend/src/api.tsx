@@ -36,6 +36,7 @@ export async function makePostRequest(url: string, data: any) {
     }
   )
 
+  // Ошибки в принцепе тоже ловит, если они с сервера идут как JSON
   return await res.json();
 }
 

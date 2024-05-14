@@ -58,6 +58,10 @@ export function CreateContractWindow(props: any) {
   }
 
   useEffect(() => {
+    if (service === null) {
+      setTemplate(null)
+    }
+
     if (isAdmin) {
       handleClose();
     } else {
@@ -157,12 +161,22 @@ export function CreateContractWindow(props: any) {
             type="submit"
             disabled={disable}
             onClick={async () => {
-              await createNewContract({
+              let status: string = "Новый договор был создан успешно"
+              let response = await createNewContract({
                 counterparty: counterparty,
                 template: template,
                 service: service,
                 name: name
               })
+
+              if ('success' in response) {
+                toast({
+                  variant: "destructive",
+                  title: response.title,
+                  description: response.description,
+                })
+                return
+              }
 
               router.refresh()
               setOpen(false);
@@ -171,7 +185,7 @@ export function CreateContractWindow(props: any) {
               setService(null);
               setName("")
               toast({
-                description: "Новый договор был создан успешно"
+                description: status
               })
             }}
           >
