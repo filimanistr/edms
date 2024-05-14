@@ -24,6 +24,7 @@ import {
 import { DataTablePagination} from "@/components/table/data-table-pagination";
 import { useRouter } from "next/navigation"
 import {DataTableToolbar} from "@/components/table/data-table-toolbar";
+import {whitespace} from "stylis";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]

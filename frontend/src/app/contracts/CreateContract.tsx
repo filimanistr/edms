@@ -144,6 +144,7 @@ export function CreateContractWindow(props: any) {
                                        not_found={"Шаблон не найден"}
                                        value={template}
                                        setValue={setTemplate}
+                                       disabled={service === null}
             />}
             <div className="">
               {/* <WatchButton/> */}
