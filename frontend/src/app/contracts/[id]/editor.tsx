@@ -14,7 +14,7 @@ import { plugins } from "@/lib/plate-plugins"
 // TODO: Таблички могут убегать за края карты, не то чтобы это мешает, проблема номер 9999
 // TODO: Нужны конкретные размеры текстового поля как у листа А4
 
-export function ContractEditor({text, data, update}: any) {
+export function ContractEditor({text, data, userData, update}: any) {
   return (
     <TooltipProvider>
       <CommentsProvider users={{}} myUserId="1">
@@ -33,7 +33,7 @@ export function ContractEditor({text, data, update}: any) {
         />
 
         <FixedToolbar>
-          <FixedToolbarButtons/>
+          <FixedToolbarButtons userData={userData}/>
         </FixedToolbar>
 
         <Editor

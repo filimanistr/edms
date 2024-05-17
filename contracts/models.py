@@ -16,7 +16,7 @@ class Counterparty(models.Model):
     KPP = models.DecimalField("КПП", max_digits=9, decimal_places=0,
                               db_column="КПП")
 
-    # Банковская инфомация
+    # Банковская информация
     bank_name = models.TextField("наименование банка",
                                  db_column="наименование_банка")
     BIC = models.TextField("БИК", db_column="БИК")
@@ -138,7 +138,6 @@ class ContractsHistory(models.Model):
 
     class Meta:
         db_table = "ИсторияДоговоров"
-        # TODO: Не уверен стоит ли добавлять его в admin панель, если нет убрать
         verbose_name = 'История договора'
         verbose_name_plural = 'История договоров'
 

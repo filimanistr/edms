@@ -12,7 +12,7 @@ urlpatterns = [
     path('api/templates/<int:template_id>/', views.Template.as_view(), name='template'),
 
     path('api/counterparties/', views.Counterparties.as_view(), name='counterparties'),
-    path('api/services/', views.Services.as_view(), name='services'),
+    path('api/counterparties/<int:counterparty_id>/', views.Counterparty.as_view(), name='counterparties'),
 
-    # path('api/upload-file/', views.FileUploadAPIView.as_view(), name='upload-file'),
+    path('api/services/', views.Services.as_view(), name='services'),
 ]

@@ -1,14 +1,12 @@
-import {cookies} from "next/headers";
+import {makeGetRequest} from "@/api";
 
-const url: string = "http://localhost:8000/api/counterparties/"
+const url: string = "http://localhost:8000/api/counterparties/";
 
 export async function getCounterparties()  {
-  const cookieStore = cookies()
-  const token = cookieStore.get("token")!.value
-  const res = await fetch(url, {
-    headers: {"Authorization": "Token " + token},
-    cache: 'no-cache'
-  });
-
-  return await res.json();
+  return await makeGetRequest(url);
 }
+
+export async function getCounterparty(id: number)  {
+  return await makeGetRequest(url+id+'/');
+}
+

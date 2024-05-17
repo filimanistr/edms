@@ -105,7 +105,12 @@ export function CreateTemplateWindow(props: any) {
               let response = await createNewTemplate({
                 service: service,
                 name: name,
-                template: [{"type": "p", "children": [{"text": ""}]}],
+                template: [{"type": "p", "children": [{
+                  "text": "",
+                  "fontFamily": "Times New Roman",
+                  "fontSize": 14,
+                  }]
+                }],
               })
 
               if ('success' in response) {

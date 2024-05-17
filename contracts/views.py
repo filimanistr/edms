@@ -7,7 +7,6 @@ from rest_framework import status
 from .services import *
 
 # TODO: Тут нужны drf generic base classes 
-# TODO: Мб эту тему тоже надо разделить по django apps 
 
 
 class Contract(APIView):
@@ -141,6 +140,19 @@ class Counterparties(APIView):
 
     def post(self, request):
         # TODO: Создание новых контрагентов от лица админа
+        pass
+
+
+class Counterparty(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, counterparty_id, format=None):
+        if request.user.id == counterparty_id or request.user.email in ADMINS:
+            r = get_counterparty_data(counterparty_id)
+            return JsonResponse(r, safe=False)
+        return HttpResponse(status=403)
+
+    def post(self, request):
         pass
 
 

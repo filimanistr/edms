@@ -6,7 +6,7 @@ from django.db.models import Max
 from weasyprint import HTML, CSS
 
 from .models import Contract, ContractsHistory, ContractTemplate, Counterparty, ServicesReference
-from .config import ADMINS
+from .config import ADMINS, KEY_FIELDS
 
 # Тут описывается вся бизнес логика
 # т.е. Model слой в паттерне MVC
@@ -33,6 +33,7 @@ def get_contract(contract_id: int) -> dict:
                                 "counterparty__name",
                                 "template__id",
                                 "template__name",
+                                "template__service__name",
                                 "status",
                                 "year").get(id=contract_id)
     return q
@@ -50,6 +51,29 @@ def get_user_contracts(user_id: int) -> list:
     return list(q.order_by("id"))
 
 
+def form_contract(counterparty: Counterparty,
+                  contract: Contract,
+                  service: ServicesReference) -> dict:
+    """Creating contracts based of a template"""
+    data = contract.contract
+    for leaf in data:
+        for node in leaf["children"]:
+            backgroundColor = node.get("backgroundColor")
+            text = node["text"].lower().strip()
+            if backgroundColor == "#FEFF00":
+                if text == "название услуги":
+                    node["text"] = str(service.name)
+                    node["backgroundColor"] = ""
+                elif text == "номер договора":
+                    node["text"] = str(contract.name)
+                    node["backgroundColor"] = ""
+                elif text in KEY_FIELDS.keys():
+                    node["text"] = str(getattr(counterparty, KEY_FIELDS[text]))
+                    node["backgroundColor"] = ""
+
+    return data
+
+
 def create_new_contract(user: str,
                         counterparty_id: int,
                         service_id: int,
@@ -58,9 +82,6 @@ def create_new_contract(user: str,
     counterparty = Counterparty.objects.get(id=counterparty_id)
     service = ServicesReference.objects.get(id=service_id)
     template = ContractTemplate.objects.get(id=template_id)
-
-    # TODO: Тут должно быть формирование договора
-
     if user in ADMINS:
         status = "ожидает согласования заказчиком"
     else:
@@ -78,9 +99,11 @@ def create_new_contract(user: str,
         }
     )
 
-
     # TODO: вот тут бы свою ошибку сделать
     if not created: return None
+    data = form_contract(counterparty, obj, service)
+    obj.contract = data
+    obj.save()
 
     r = model_to_dict(obj)
     r["counterparty__name"] = counterparty.name
@@ -139,7 +162,7 @@ def update_contract_status_by_the_client(user,
             print("Попытка выставления ОС согласованному договору")
             return
 
-        # елси статус контракта не "согласован" то значит он ОС
+        # если статус контракта не "согласован" то значит он ОС
         if status == contract.status:
             print("Попытка выставления одного и того же статуса второй раз")
             return
@@ -206,6 +229,10 @@ def update_contract(user: str, contract_id: int, new_contract: list) -> None:
 def get_all_counterparties() -> list[dict]:
     r = Counterparty.objects.all().values()
     return list(r.order_by("id"))
+
+def get_counterparty_data(counterparty_id: int) -> list[dict]:
+    r = Counterparty.objects.get(pk=counterparty_id)
+    return model_to_dict(r)
 
 
 def get_services() -> list[dict]:

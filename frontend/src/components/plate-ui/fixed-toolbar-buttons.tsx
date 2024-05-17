@@ -9,7 +9,6 @@ import {
 import { useEditorReadOnly } from '@udecode/plate-common';
 import { MARK_BG_COLOR, MARK_COLOR } from '@udecode/plate-font';
 import { ListStyleType } from '@udecode/plate-indent-list';
-import { ELEMENT_IMAGE } from '@udecode/plate-media';
 
 import { Icons, iconVariants } from '@/components/icons';
 import { AlignDropdownMenu } from '@/components/plate-ui/align-dropdown-menu';
@@ -26,8 +25,10 @@ import { ToolbarGroup } from './toolbar';
 
 import { FontFamilyDropdownMenu } from "@/components/plate-ui/font-family/font-family-dropdown-menu"
 import { FontSizeInput } from "@/components/plate-ui/font-size/font-size-input"
+import { InsertDataDropdownMenu } from "@/components/plate-ui/data/insert-data-dropdown-menu";
+import { InsertDropdownMenu} from "@/components/plate-ui/insert-dropdown-menu";
 
-export function FixedToolbarButtons() {
+export function FixedToolbarButtons({userData}:any) {
   const readOnly = useEditorReadOnly();
 
   return (
@@ -41,6 +42,10 @@ export function FixedToolbarButtons() {
         {!readOnly && (
           <>
             <ToolbarGroup noSeparator>
+              <InsertDataDropdownMenu userData={userData}/>
+            </ToolbarGroup>
+
+            <ToolbarGroup>
               <FontFamilyDropdownMenu/>
               <FontSizeInput/>
             </ToolbarGroup>
