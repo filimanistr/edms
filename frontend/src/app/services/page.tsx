@@ -12,6 +12,9 @@ export default async function Page() {
     <>
       <Header page={page} is_admin={data.is_admin}/>
       <main className="px-24 pb-24 pt-12 flex-auto min-h-screen max-w-7xl mx-auto flex-col items-center justify-between p-24">
+        <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight pb-4">
+          Наши услуги
+        </h3>
         {data && <DataTable columns={servicesColumns} data={data.data} page={page} is_admin={data.is_admin}/>}
       </main>
     </>

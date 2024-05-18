@@ -18,7 +18,7 @@ interface DataTableToolbarProps<TData> {
 
 export function DataTableToolbar<TData>({table, page, is_admin}: DataTableToolbarProps<TData>) {
   return (
-    <div className="flex items-center py-4 w-full gap-2">
+    <div className="flex items-center pb-4 w-full gap-2">
       <Input
         placeholder="Поиск по названию..."
         value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
@@ -29,6 +29,25 @@ export function DataTableToolbar<TData>({table, page, is_admin}: DataTableToolba
       />
 
       {table.getColumn("status") && (
+        <DataTableFacetedFilter
+          column={table.getColumn("status")}
+          title="Статусы"
+          options={[{
+            value: "согласован",
+            label: "согласован",
+          },
+            {
+              value: "ожидает согласования поставщиком",
+              label: "ожидает согласования поставщиком",
+            },
+            {
+              value: "ожидает согласования заказчиком",
+              label: "ожидает согласования заказчиком",
+            }]}
+        />
+      )}
+
+      {table.getColumn("service__name") && (
         <DataTableFacetedFilter
           column={table.getColumn("status")}
           title="Статусы"
