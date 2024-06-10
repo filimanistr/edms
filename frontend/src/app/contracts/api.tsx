@@ -1,38 +1,44 @@
 "use server"
 
-import {Contract} from "@/components/table/columns";
-import {makeGetRequest, MakePatchRequest, makePostRequest, makePutRequest} from "@/api";
+import { Contract } from "@/components/table/columns";
+import { HOST } from "@/config";
+import {
+  makeGetRequest,
+  MakePatchRequest,
+  makePostRequest
+} from "@/api";
 
-const url: string = "http://localhost:8000/api/contracts/"
+const PATH: string = "api/contracts/";
+const URL: string = HOST + PATH;
 
 export async function getContracts(): Promise<Contract[]> {
-  return await makeGetRequest(url)
+  return await makeGetRequest(URL)
 }
 
 export async function getContract(id: number)  {
-  return await makeGetRequest(url+id+'/')
+  return await makeGetRequest(URL+id+'/')
 }
 
 export async function createNewContract(data: object) {
-  return await makePostRequest(url, data);
+  return await makePostRequest(URL, data);
 }
 
 export async function updateContract(id: number, data: object)  {
   // Обновляет как состояние так и сам контракт
-  await MakePatchRequest(url+id+"/", data)
+  await MakePatchRequest(URL+id+"/", data)
 }
 
 
 export async function getFields() {
   /* Поля что нужны для создания контракта */
-  return await makeGetRequest(url+"fields/")
+  return await makeGetRequest(URL+"fields/")
 }
 
 
 export async function createPreviewContract(data: object) {
-  return await makePostRequest(url+"preview/", data)
+  return await makePostRequest(URL+"preview/", data)
 }
 
 export async function savePreviewContract(data: object) {
-  return await makePostRequest(url+"save/", data)
+  return await makePostRequest(URL+"save/", data)
 }

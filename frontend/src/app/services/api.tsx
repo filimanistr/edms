@@ -1,20 +1,22 @@
-"use server"
+import { HOST } from "@/config";
+import {
+  makeGetRequest,
+  makePostRequest
+} from "@/api";
 
-import {cookies} from "next/headers";
-import {makeGetRequest, makePostRequest} from "@/api";
-
-const url: string = "http://localhost:8000/api/services/";
+const PATH: string = "api/services/";
+const URL: string = HOST + PATH;
 
 export async function getServices()  {
-  return await makeGetRequest(url)
+  return await makeGetRequest(URL)
 }
 
 export async function getService(id: number)  {
-  return await makeGetRequest(url+id+'/')
+  return await makeGetRequest(URL+id+'/')
 }
 
 export async function createService(data: object) {
-  return await makePostRequest(url, data);
+  return await makePostRequest(URL, data);
 }
 
 

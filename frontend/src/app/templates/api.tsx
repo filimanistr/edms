@@ -1,21 +1,25 @@
-"use server"
+import { HOST } from "@/config";
+import {
+  makeGetRequest,
+  makePostRequest,
+  MakePatchRequest
+} from "@/api";
 
-import {makeGetRequest, makePostRequest, makePutRequest, MakePatchRequest} from "@/api";
-
-const url: string = "http://localhost:8000/api/templates/"
+const PATH: string = "api/templates/";
+const URL: string = HOST + PATH;
 
 export async function getTemplates()  {
-  return await makeGetRequest(url)
+  return await makeGetRequest(URL)
 }
 
 export async function getTemplate(id: number) {
-  return await makeGetRequest(url+id+'/')
+  return await makeGetRequest(URL+id+'/')
 }
 
 export async function createNewTemplate(data: object) {
-  return await makePostRequest(url, data);
+  return await makePostRequest(URL, data);
 }
 
 export async function updateTemplate(id: number, data: object)  {
-  await MakePatchRequest(url+id+"/", data)
+  await MakePatchRequest(URL+id+"/", data)
 }

@@ -1,12 +1,15 @@
-import {makeGetRequest} from "@/api";
+import { HOST } from "@/config";
+import {
+  makeGetRequest
+} from "@/api";
 
-const url: string = "http://localhost:8000/api/counterparties/";
+const PATH: string = "api/counterparties/";
+const URL: string = HOST + PATH;
 
 export async function getCounterparties()  {
-  return await makeGetRequest(url);
+  return await makeGetRequest(URL);
 }
 
 export async function getCounterparty(id: number)  {
-  return await makeGetRequest(url+id+'/');
+  return await makeGetRequest(URL+id+'/');
 }
-

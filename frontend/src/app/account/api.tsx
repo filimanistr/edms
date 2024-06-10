@@ -1,8 +1,10 @@
 "use server"
 
-import {cookies} from "next/headers";
+import { cookies } from "next/headers";
+import { HOST } from "@/config";
 
-const url: string = "http://localhost:8000/api/accounts/login/"
+const PATH: string = "api/accounts/login/";
+const URL: string = HOST + PATH;
 
 export async function getToken(user: object) {
   /* Аутентификация */
@@ -12,7 +14,7 @@ export async function getToken(user: object) {
   // Если все успешно возвращает true
   // Если не очень - текст с ошибками
 
-  const res = await fetch(url, {
+  const res = await fetch(URL, {
       method: "POST",
       headers: {"Content-type": "application/json"},
       body: JSON.stringify(user),
