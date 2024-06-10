@@ -5,8 +5,7 @@ from django.contrib.auth import get_user_model
 class Counterparty(models.Model):
     id = models.OneToOneField(get_user_model(),
                               on_delete=models.CASCADE,
-                              primary_key=True,
-                              db_column="id")
+                              primary_key=True)
     name = models.TextField("наименование краткое",
                             db_column="наименование_краткое")
     full_name = models.TextField("наименование полное",
