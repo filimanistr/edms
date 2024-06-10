@@ -7,6 +7,8 @@ import {Button} from "@/components/ui/button";
 import {PlateController} from "@udecode/plate-core";
 import {PenLine} from "lucide-react";
 
+// Actions - Кнопки взаимодействия с договором, такие как сохранить договор
+//           открыть/закрыть редактор и просмотреть историю изменений
 
 export function TemplateActions({data, update}: any) {
   const editor = useEditorRef()
@@ -25,8 +27,8 @@ export function TemplateActions({data, update}: any) {
         >
           <PenLine size={18} className="mr-2 h-4 w-4"/> Редактор
         </Button>
-        <HistoryButton/> {/* TODO: Открывать окно истории */}
-        {/* <DeleteButton/> */}
+        <HistoryButton/>
+        <DeleteButton/>
       </div>
 
       <div className="ml-auto flex gap-2">

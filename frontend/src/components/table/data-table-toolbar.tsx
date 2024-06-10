@@ -14,9 +14,10 @@ interface DataTableToolbarProps<TData> {
   table: Table<TData>
   page: string
   is_admin: boolean
+  data: object
 }
 
-export function DataTableToolbar<TData>({table, page, is_admin}: DataTableToolbarProps<TData>) {
+export function DataTableToolbar<TData>({table, page, is_admin, data}: DataTableToolbarProps<TData>) {
   return (
     <div className="flex items-center pb-4 w-full gap-2">
       <Input
@@ -47,7 +48,8 @@ export function DataTableToolbar<TData>({table, page, is_admin}: DataTableToolba
         />
       )}
 
-      {table.getColumn("service__name") && (
+      {/* TODO: Тут надо перечислять услуги */}
+      {/*table.getColumn("service__name") && (
         <DataTableFacetedFilter
           column={table.getColumn("status")}
           title="Статусы"
@@ -64,7 +66,7 @@ export function DataTableToolbar<TData>({table, page, is_admin}: DataTableToolba
               label: "ожидает согласования заказчиком",
             }]}
         />
-      )}
+      )*/}
 
       {/*
         TODO: Тут надо использовать effector:
@@ -74,7 +76,7 @@ export function DataTableToolbar<TData>({table, page, is_admin}: DataTableToolba
 
       {
         page === "/contracts" &&
-          <CreateContractWindow>
+          <CreateContractWindow data={data}>
               <Button className="h-8 ml-auto focus-visible:ring-1 focus-visible:ring-offset-0" variant="outline" size="sm">
                   <Plus size={18} className="mr-2 h-4 w-4"/> Новый
               </Button>

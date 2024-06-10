@@ -1,8 +1,7 @@
 import Header from "@/components/header";
 import { DataTable } from "@/components/table/data-table";
 import { Contract, columns } from "@/components/table/columns"
-import {getContracts} from "./api"
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import { getContracts } from "./api"
 
 export default async function ContractsPage() {
   const data: Contract[] = await getContracts();

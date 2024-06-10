@@ -22,7 +22,17 @@ export async function updateContract(id: number, data: object)  {
   await MakePatchRequest(url+id+"/", data)
 }
 
+
 export async function getFields() {
   /* Поля что нужны для создания контракта */
   return await makeGetRequest(url+"fields/")
+}
+
+
+export async function createPreviewContract(data: object) {
+  return await makePostRequest(url+"preview/", data)
+}
+
+export async function savePreviewContract(data: object) {
+  return await makePostRequest(url+"save/", data)
 }

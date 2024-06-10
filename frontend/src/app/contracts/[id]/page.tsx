@@ -1,7 +1,8 @@
 import Header from "@/components/header";
 import { getContract, updateContract } from "../api";
-import { ContractEditor } from "./editor";
 import { getCounterparty } from "../../counterparties/api"
+import {PlateEditor} from "@/components/plate-editor";
+import {ContractActions} from "@/app/contracts/[id]/actions";
 
 export default async function ContractPage({params}: any) {
   const page: string = "/contracts"
@@ -15,7 +16,7 @@ export default async function ContractPage({params}: any) {
   return (
     <>
       <Header page={page}/>
-      <main className="flex-auto min-h-screen max-w-7xl mx-auto flex-col items-center justify-between px-24 pb-24 pt-12">
+      <main className="flex-auto min-h-screen max-w-[1066px] mx-auto flex-col items-center justify-between pb-24 px-24 pt-12">
         <div className="text-lg font-semibold">
           {data.name}<br/>
         </div>
@@ -30,12 +31,9 @@ export default async function ContractPage({params}: any) {
           <br/>
         </p>
 
-        <ContractEditor
-          text={data.contract}
-          data={data}
-          userData={userData}
-          update={updateContract}
-        />
+        <PlateEditor text={data.contract} userData={userData}>
+          <ContractActions data={data} update={updateContract}/>
+        </PlateEditor>
       </main>
     </>
   );

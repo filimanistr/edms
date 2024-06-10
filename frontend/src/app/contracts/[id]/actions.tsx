@@ -1,3 +1,5 @@
+"use client"
+
 import {useEditorReadOnly, useEditorRef, usePlateStore} from "@udecode/plate-common";
 import {AcceptButton, DeleteButton, HistoryButton, SendToAcceptanceButton} from "@/components/buttons";
 import Link from "next/link";
@@ -5,15 +7,15 @@ import {Button} from "@/components/ui/button";
 import {PenLine} from "lucide-react";
 import {useState} from "react";
 
+// Actions - Кнопки взаимодействия с договором, такие как сохранить договор
+//           открыть/закрыть редактор и просмотреть историю изменений
+
 export function ContractActions({data, update}: any) {
   const [show, setShow] = useState(false);
 
   const editor = useEditorRef()
   const setReadOnly = usePlateStore().set.readOnly();
   const readOnly = useEditorReadOnly();
-
-  // TODO: Я бы как то весь этот бардак пофиксил, но это надо думать долго
-  //       задача номер 99999
 
   function handleUpdateContract() {
     update(data.id, {
@@ -51,8 +53,8 @@ export function ContractActions({data, update}: any) {
           <PenLine size={18} className="mr-2 h-4 w-4"/> Редактор
         </Button>
 
-        <HistoryButton/> {/* TODO: Открывать окно истории */}
-        {/* data.role === "admin" && <DeleteButton/> */}
+        <HistoryButton/>
+        { data.role === "admin" && <DeleteButton/> }
       </div>
 
       <div className="ml-auto flex gap-2">

@@ -166,19 +166,21 @@ class Services(APIView):
         return JsonResponse(r, safe=False)
 
     def post(self, request):
-        if request.user.email in ADMINS:
-            r = create_new_service(request.data["name"],
+        if request.user.email not in ADMINS:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        r = create_new_service(request.data["name"],
                                request.data["price"],
                                request.data["year"])
 
-            if r is None:
-                return Response({
-                    "success": False,
-                    "title": "Услуга с таким именем уже существует",
-                    "description": "Измените название услуги на уникальное"
-                    }, status=status.HTTP_409_CONFLICT)
-            return JsonResponse(r, safe=False)
-        return HttpResponse(status=403)
+        if r is None:
+            return Response({
+                "success": False,
+                "title": "Услуга с таким именем уже существует",
+                "description": "Измените название услуги на уникальное"
+                }, status=status.HTTP_409_CONFLICT)
+
+        return JsonResponse(r, safe=False)
 
 
 class ContractFields(APIView):
@@ -194,16 +196,59 @@ class ContractFields(APIView):
         return JsonResponse(r, safe=False)
 
 
-''' TODO: Откинуть вообще в другую ветку гита
-class FileUploadAPIView(APIView):
-    """Creating new template object"""
-    parser_classes = (MultiPartParser, FormParser)
+class ContractPreview(APIView):
+    """Creates contract's preview to review it
+    before actually saving it to database"""
+    permission_classes = [IsAuthenticated]
 
-    def post(self, request, *args, **kwargs):
-        file_obj = request.data['file']
-        service_id = request.data["service"]
-        name = request.data["name"]
-        template = create_new_template(name, service_id, file_obj)
-        return JsonResponse(template, safe=False)
-'''
+    def post(self, request):
+        email = request.user.email
+        c = request.data["counterparty"]
+        s = request.data["service"]
+        t = request.data["template"]
+        n = request.data["name"]
+
+        if email not in ADMINS:
+            c = request.user.id
+
+        return Response(create_contract_preview(counterparty_id=c,
+                                                service_id=s,
+                                                template_id=t,
+                                                name=n))
+
+
+class ContractSave(APIView):
+    """Saves to db new contract without generating it based on a template
+    but should be specified anyway"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        email = request.user.email
+        con = request.data["contract"]
+        c = request.data["counterparty"]
+        s = request.data["service"]
+        t = request.data["template"]
+        n = request.data["name"]
+
+        if email not in ADMINS:
+            c = request.user.id
+
+        contract = save_contract_preview(user=email,
+                                         contract=con,
+                                         counterparty_id=c,
+                                         service_id=s,
+                                         template_id=t,
+                                         name=n)
+
+        if contract is None:
+            if email in ADMINS:
+                msg = "Договор с таким именем для этого контрагента уже существует"
+            else:
+                msg = "Договор с таким именем уже существует"
+            return Response({
+                "success": False,
+                "title": msg,
+                "description": "Измените название договора"
+                }, status=status.HTTP_409_CONFLICT)
+        return JsonResponse(contract, safe=False)
 

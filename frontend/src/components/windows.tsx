@@ -31,7 +31,8 @@ export function SelectWithSearch({data,
                                   value,
                                   setValue,
                                   input_placeholder="Поиск",
-                                  disabled=false
+                                  disabled=false,
+                                  onChange=null
                                  }: any) {
   const [open, setOpen] = useState(false)
 
@@ -73,6 +74,8 @@ export function SelectWithSearch({data,
                       else
                         setValue(item.id)
                       setOpen(false)
+                      if (onChange)
+                        onChange()
                     }}
                   >
                     {item.name}

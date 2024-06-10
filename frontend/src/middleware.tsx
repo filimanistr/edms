@@ -23,6 +23,7 @@ export default function authenticationMiddleware(request: NextRequest, event: Ne
 export const config = {
     matcher: ['/templates/:path*',
             '/contracts/:path*',
+            '/services/:path*',
             '/counterparties/:path*',
             '/account/:path*',
             '/'],

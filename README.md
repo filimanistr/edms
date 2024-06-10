@@ -17,10 +17,17 @@
 
 ## TODO:
 
+Предпросмотр
+Регистрация
+Шаблоны давать создавать юзерам
+Вставка данных исполнителя
+
 1. Дать редактировать шаблон контрагентам
 2. Preview contracts before creating
 3. History of changes
 
+0. удалять шаблоны, но не договора
+0. особые правила при удалении договоров: можно если 2 стороны согласны
 
 1. Формировать закрывающие документы
 2. Создавать контрагентов за них
@@ -42,4 +49,8 @@ May be i need to use `effector` to refactor some of that code there
 4. Change font size selection to input
 5. Font size and family resets after ctrl a
 6. Maybe Plate.js editor should look like A4 sheet
+7. Таблички могут убегать за края карты, не то чтобы это мешает
+8. Edit template name and MAYBE service в окне темплейта и контракта на нажатие кнопки редактирования 
+9. Мб корзина всех договоров и шаблонов доступная только исполителю
+
 

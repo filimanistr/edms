@@ -14,6 +14,13 @@ export type Template = {
   service: number
 }
 
+export type ContractPreview = {
+  name?: string
+  contract?: object
+  template__name?: string
+  user?: object
+}
+
 export interface Data {
   counterparties: Counterparty[];
   templates: Template[];

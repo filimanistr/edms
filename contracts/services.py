@@ -17,6 +17,7 @@ from .config import ADMINS, KEY_FIELDS
 def get_all_contracts() -> list:
     q = Contract.objects.values("id",
                                 "name",
+                                "counterparty__id",
                                 "counterparty__name",
                                 "template__id",
                                 "template__name",
@@ -42,6 +43,7 @@ def get_contract(contract_id: int) -> dict:
 def get_user_contracts(user_id: int) -> list:
     q = Contract.objects.values("id",
                                 "name",
+                                "counterparty__id",
                                 "counterparty__name",
                                 "template__id",
                                 "template__name",
@@ -51,27 +53,28 @@ def get_user_contracts(user_id: int) -> list:
     return list(q.order_by("id"))
 
 
-def form_contract(counterparty: Counterparty,
-                  contract: Contract,
-                  service: ServicesReference) -> dict:
+# TODO: МБ аргументы сократить до 2, что надо вставить и куда вставить 
+def form_contract(counterparty: Counterparty,  # data that will be inserted
+                  template: dict,
+                  contract_name: str,
+                  service_name: str) -> dict:
     """Creating contracts based of a template"""
-    data = contract.contract
-    for leaf in data:
+    for leaf in template:
         for node in leaf["children"]:
             backgroundColor = node.get("backgroundColor")
             text = node["text"].lower().strip()
             if backgroundColor == "#FEFF00":
                 if text == "название услуги":
-                    node["text"] = str(service.name)
+                    node["text"] = str(service_name)
                     node["backgroundColor"] = ""
                 elif text == "номер договора":
-                    node["text"] = str(contract.name)
+                    node["text"] = str(contract_name)
                     node["backgroundColor"] = ""
                 elif text in KEY_FIELDS.keys():
                     node["text"] = str(getattr(counterparty, KEY_FIELDS[text]))
                     node["backgroundColor"] = ""
 
-    return data
+    return template
 
 
 def create_new_contract(user: str,
@@ -101,10 +104,66 @@ def create_new_contract(user: str,
 
     # TODO: вот тут бы свою ошибку сделать
     if not created: return None
-    data = form_contract(counterparty, obj, service)
+    data = form_contract(counterparty, obj.contract, obj.name, service.name)
     obj.contract = data
     obj.save()
 
+    r = model_to_dict(obj)
+    r["counterparty__name"] = counterparty.name
+    r["template__name"] = template.name
+    return r
+
+def create_contract_preview(counterparty_id,
+                            service_id,
+                            template_id,
+                            name) -> dict:
+    """Creates contract but not saves to database
+
+    Returns contract and data that comes with it.
+    Also includes user data to insert it in editor into contract
+    So client dont need to request it again (saves time)"""
+    counterparty = Counterparty.objects.get(id=counterparty_id)
+    service = ServicesReference.objects.get(id=service_id)
+    template = ContractTemplate.objects.get(id=template_id)
+    preview = form_contract(counterparty, template.template, name, service.name)
+    return {
+        "name": name,
+        "template__name": template.name,
+        "contract": preview,
+        "user": model_to_dict(counterparty)
+    }
+
+def save_contract_preview(user: str,
+                          contract: list,
+                          counterparty_id: int,
+                          service_id: int,
+                          template_id: int,
+                          name: str) -> dict:
+    """Save contract to db without forming it based on a template"""
+    counterparty = Counterparty.objects.get(id=counterparty_id)
+    service = ServicesReference.objects.get(id=service_id)
+    template = ContractTemplate.objects.get(id=template_id)
+    if user in ADMINS:
+        status = "ожидает согласования заказчиком"
+    else:
+        status = "ожидает согласования поставщиком"
+
+    # TODO: fix repeating code
+
+    # don't create contracts with same name for one counterparty
+    obj, created = Contract.objects.get_or_create(
+        name=name,
+        counterparty=counterparty,
+        defaults={
+            "template": template,
+            "contract": contract,
+            "year": timezone.now().year,
+            "status": status
+        }
+    )
+
+    # TODO: вот тут бы свою ошибку сделать
+    if not created: return None
     r = model_to_dict(obj)
     r["counterparty__name"] = counterparty.name
     r["template__name"] = template.name

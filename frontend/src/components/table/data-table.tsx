@@ -62,7 +62,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <>
-      <DataTableToolbar table={table} page={page} is_admin={is_admin}/>
+      <DataTableToolbar table={table} page={page} is_admin={is_admin} data={data}/>
       <div className="outline-none rounded-md border">
       <Table>
         <TableHeader>

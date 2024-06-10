@@ -117,7 +117,7 @@ export const servicesColumns: ColumnDef<Service>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Цена
+          Сумма
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
