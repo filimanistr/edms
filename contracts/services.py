@@ -23,7 +23,7 @@ def get_all_contracts() -> list:
                                 "template__name",
                                 "status",
                                 "year")
-    return list(q.order_by("id"))
+    return list(q.order_by("pk"))
 
 
 def get_contract(contract_id: int) -> dict:
@@ -36,7 +36,7 @@ def get_contract(contract_id: int) -> dict:
                                 "template__name",
                                 "template__service__name",
                                 "status",
-                                "year").get(id=contract_id)
+                                "year").get(pk=contract_id)
     return q
 
 
@@ -50,7 +50,7 @@ def get_user_contracts(user_id: int) -> list:
                                 "contract",
                                 "status",
                                 "year").filter(counterparty__id=user_id)
-    return list(q.order_by("id"))
+    return list(q.order_by("pk"))
 
 
 # TODO: МБ аргументы сократить до 2, что надо вставить и куда вставить 
@@ -82,9 +82,9 @@ def create_new_contract(user: str,
                         service_id: int,
                         template_id: int,
                         name: str) -> dict:
-    counterparty = Counterparty.objects.get(id=counterparty_id)
-    service = ServicesReference.objects.get(id=service_id)
-    template = ContractTemplate.objects.get(id=template_id)
+    counterparty = Counterparty.objects.get(pk=counterparty_id)
+    service = ServicesReference.objects.get(pk=service_id)
+    template = ContractTemplate.objects.get(pk=template_id)
     if user in ADMINS:
         status = "ожидает согласования заказчиком"
     else:
@@ -122,9 +122,9 @@ def create_contract_preview(counterparty_id,
     Returns contract and data that comes with it.
     Also includes user data to insert it in editor into contract
     So client dont need to request it again (saves time)"""
-    counterparty = Counterparty.objects.get(id=counterparty_id)
-    service = ServicesReference.objects.get(id=service_id)
-    template = ContractTemplate.objects.get(id=template_id)
+    counterparty = Counterparty.objects.get(pk=counterparty_id)
+    service = ServicesReference.objects.get(pk=service_id)
+    template = ContractTemplate.objects.get(pk=template_id)
     preview = form_contract(counterparty, template.template, name, service.name)
     return {
         "name": name,
@@ -140,9 +140,9 @@ def save_contract_preview(user: str,
                           template_id: int,
                           name: str) -> dict:
     """Save contract to db without forming it based on a template"""
-    counterparty = Counterparty.objects.get(id=counterparty_id)
-    service = ServicesReference.objects.get(id=service_id)
-    template = ContractTemplate.objects.get(id=template_id)
+    counterparty = Counterparty.objects.get(pk=counterparty_id)
+    service = ServicesReference.objects.get(pk=service_id)
+    template = ContractTemplate.objects.get(pk=template_id)
     if user in ADMINS:
         status = "ожидает согласования заказчиком"
     else:
@@ -171,7 +171,7 @@ def save_contract_preview(user: str,
 
 
 def create_new_template(name: str, service_id: int, template: str) -> dict:
-    service = ServicesReference.objects.get(id=service_id)
+    service = ServicesReference.objects.get(pk=service_id)
 
     # don't create template with same name for one service
     obj, created = ContractTemplate.objects.get_or_create(
@@ -188,7 +188,7 @@ def create_new_template(name: str, service_id: int, template: str) -> dict:
 
 def get_contract_templates() -> list[dict]:
     r = ContractTemplate.objects.values("id", "name", "service__name")
-    return list(r.order_by("id"))
+    return list(r.order_by("pk"))
 
 
 def get_template(template_id: int) -> dict:
@@ -287,7 +287,7 @@ def update_contract(user: str, contract_id: int, new_contract: list) -> None:
 
 def get_all_counterparties() -> list[dict]:
     r = Counterparty.objects.all().values()
-    return list(r.order_by("id"))
+    return list(r.order_by("pk"))
 
 def get_counterparty_data(counterparty_id: int) -> list[dict]:
     r = Counterparty.objects.get(pk=counterparty_id)
@@ -296,7 +296,7 @@ def get_counterparty_data(counterparty_id: int) -> list[dict]:
 
 def get_services() -> list[dict]:
     r = ServicesReference.objects.all().values()
-    return list(r.order_by("id"))
+    return list(r.order_by("pk"))
 
 
 def create_new_service(name: str, price: int, year) -> None:
