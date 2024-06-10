@@ -12,20 +12,20 @@ function Stage1(){
     <>
       <div className="grid gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="name">Имя</Label>
-          <Input id="name" type="text" required/>
+          <Label htmlFor="last-name">Фамилия руководителя организации</Label>
+          <Input id="last-name" type="text" placeholder="Иванов" required/>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="last-name">Фамилия</Label>
-          <Input id="last-name" type="text" required/>
+          <Label htmlFor="name">Имя руководителя организации</Label>
+          <Input id="name" type="text" placeholder="Иван" required/>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="second-name">Отчество</Label>
-          <Input id="second-name" type="text" required/>
+          <Label htmlFor="second-name">Отчество руководителя организации</Label>
+          <Input id="second-name" type="text" placeholder="Иванович" required/>
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="email">Почта</Label>
+          <Label htmlFor="email">Адрес электронной почты</Label>
           <Input
             id="email"
             type="email"
@@ -38,12 +38,12 @@ function Stage1(){
           <Input id="password1" type="password" required/>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="password2">Повторите пароль</Label>
+          <Label htmlFor="password2">Подтвердите пароль</Label>
           <Input id="password2" type="password" required/>
         </div>
         <div className="grid gap-2">
           <Label htmlFor="reason">Основания</Label>
-          <Input id="reason" type="text" required/>
+          <Input id="reason" type="text" placeholder="Действует на основании ..." required/>
         </div>
       </div>
     </>
@@ -55,37 +55,37 @@ function Stage2() {
     <>
       <div className="grid gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="short-name">Короткое наименование организации</Label>
-          <Input id="short-name" type="text" required/>
+          <Label htmlFor="short-name">Краткое наименование организации</Label>
+          <Input id="short-name" type="text" placeholder="МАОУ СОШ №" required/>
         </div>
         <div className="grid gap-2">
           <Label htmlFor="full-name">Полное наименование организации</Label>
-          <Input id="full-name" type="text" required/>
+          <Input id="full-name" type="text" placeholder="Муниципальное автономное ..." required/>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="inn">ИНН</Label>
-          <Input id="inn" type="text" required/>
+          <Label htmlFor="inn">ИНН организации</Label>
+          <Input id="inn" type="text" placeholder="Набор из 10 цифр" required/>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="kpp">КПП</Label>
-          <Input id="kpp" type="text" required/>
+          <Label htmlFor="kpp">КПП организации</Label>
+          <Input id="kpp" type="text" placeholder="Набор из 9 цифр" required/>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="bic">БИК</Label>
-          <Input id="bic" type="text" required/>
+          <Label htmlFor="bic">БИК банка</Label>
+          <Input id="bic" type="text" placeholder="Введите БИК" required/>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="rs">р/с</Label>
-          <Input id="rs" type="text" required/>
+          <Label htmlFor="rs">Номер расчетного счета</Label>
+          <Input id="rs" type="text" placeholder="Набор из 20 цифр" required/>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="ls">л/с</Label>
-          <Input id="ls" type="text" required/>
+          <Label htmlFor="ls">Номер лицевого счета</Label>
+          <Input id="ls" type="text" placeholder="Набор из 20 цифр" required/>
         </div>
       </div>
       <div className="grid gap-2 mt-4 text-center text-sm">
         <Button type="submit" className="w-full">
-          Зарегестрироваться
+          Зарегистрироваться
         </Button>
       </div>
     </>
@@ -111,7 +111,7 @@ export default function Register({ toggleComponent } : any) {
         { showPart ? <Stage1/> : <Stage2/> }
         <div className="grid gap-2 mt-4 text-center text-sm">
           <Button variant="outline" className="w-full" onClick={onNextClick}>
-            { showPart ? "Продолжить" : "Венуться" }
+            { showPart ? "Продолжить" : "Вернуться" }
           </Button>
         </div>
         <div className="mt-4 text-center text-sm">

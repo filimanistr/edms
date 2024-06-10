@@ -80,7 +80,7 @@ export default function Login({ toggleComponent }: any) {
           <div className="inline-block" onClick={toggleComponent}>
             { /* Don&apos;t have an account?{" "} */}
             <Link href="#" className="underline">
-              Зарегестрироваться
+              Зарегистрироваться
             </Link>
           </div>
         </div>

@@ -35,7 +35,7 @@ export default async function Header({ page='/', is_admin = false}) {
                 : "text-muted-foreground transition-colors hover:text-foreground"
             }
           >
-            Договора
+            Договоры
           </Link>
           <Link
             replace
