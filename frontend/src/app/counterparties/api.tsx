@@ -1,3 +1,5 @@
+"use server"
+
 import { HOST } from "@/config";
 import {
   makeGetRequest

@@ -1,6 +1,7 @@
 "use server"
 
 import {cookies} from "next/headers";
+import axios from 'axios';
 
 // Общие функции, для избежания повторяемости кода там где это возможно
 // Каждый запрос это получение куков и выставление заголовков,
@@ -9,6 +10,7 @@ import {cookies} from "next/headers";
 export async function makeGetRequest(url: string) {
   const cookieStore = cookies()
   const token = cookieStore.get("token")!.value
+
   const res = await fetch(url, {
     headers: {"Authorization": "Token " + token},
     cache: 'no-cache'
