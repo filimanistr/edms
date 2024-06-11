@@ -18,6 +18,7 @@ export type ContractPreview = {
   name?: string
   contract?: object
   template__name?: string
+  service__name?: string
   user?: object
 }
 

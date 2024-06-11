@@ -211,10 +211,12 @@ class ContractPreview(APIView):
         if email not in ADMINS:
             c = request.user.id
 
-        return Response(create_contract_preview(counterparty_id=c,
-                                                service_id=s,
-                                                template_id=t,
-                                                name=n))
+        r = create_contract_preview(counterparty_id=c,
+                                    service_id=s,
+                                    template_id=t,
+                                    name=n)
+
+        return JsonResponse(r, safe=False)
 
 
 class ContractSave(APIView):

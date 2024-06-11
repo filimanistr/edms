@@ -159,6 +159,9 @@ export function CreateContractWindow(props: any) {
       name: name
     })
 
+    res.user["service__name"] = res.service__name
+    res.user["contract__name"] = res.name
+
     setPreview(res);
     setEditorValue(res.contract)
   }

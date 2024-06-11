@@ -129,6 +129,7 @@ def create_contract_preview(counterparty_id,
     return {
         "name": name,
         "template__name": template.name,
+        "service__name": service.name,
         "contract": preview,
         "user": model_to_dict(counterparty)
     }
