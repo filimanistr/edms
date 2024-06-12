@@ -11,8 +11,6 @@ import { CircleUser, Package2, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
 
-// TODO: Выглядит супер круто, но хз как расположить тут выпадающее меню
-
 export default async function Header({ page='/', is_admin = false}) {
   return (
       <header className="top-0 z-10 items-center gap-4 border-b bg-background px-24">
@@ -89,7 +87,7 @@ export default async function Header({ page='/', is_admin = false}) {
             </div>
           </form> */}
 
-          {/* Изменеие темы */}
+          {/* Изменение темы */}
           <ModeToggle/>
 
           {/* Аккаунт */}

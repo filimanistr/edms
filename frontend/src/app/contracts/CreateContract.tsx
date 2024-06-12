@@ -248,7 +248,7 @@ export function CreateContractWindow(props: any) {
         <DialogHeader>
           <DialogTitle>Создать новый договор</DialogTitle>
           <DialogDescription>
-            Необходимо выбрать { isAdmin && "контрагента," } услугу и шаблон, соответсвующий услуге, на основе которого будет сформирован договор
+            Необходимо выбрать { isAdmin && "контрагента," } услугу и шаблон, соответствующий услуге, на основе которого будет сформирован договор
           </DialogDescription>
         </DialogHeader>
 
@@ -427,7 +427,7 @@ export function CreateContractWindow(props: any) {
                 <AlertDialogTitle>Создать этот договор?</AlertDialogTitle>
                 <AlertDialogDescription>
                   После создания договора, ему будет передан статус ожидания согласования,
-                  изменить договор уже будет неьлзя
+                  изменить договор уже будет нельзя
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

@@ -1,14 +1,11 @@
 "use client"
 
-// Подскажки при наведении на кнопку
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-
-// Иконки
 import {
   Eye,
   PenLine,
@@ -17,8 +14,6 @@ import {
   History,
   Trash2,
 } from "lucide-react"
-
-// UI
 import {Button} from "@/components/ui/button";
 import { Loader2 } from "lucide-react"
 import {
@@ -33,9 +28,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import Link from "next/link";
-
-
-// Кнопки иконки
 
 export function UploadButton() {
   return (
@@ -103,7 +95,6 @@ export function EditButton({onclick}: any) {
 }
 
 export function WatchButton({onclick}: any) {
-  // Deprecated
   return (
     <TooltipProvider delayDuration={200}>
       <Tooltip>

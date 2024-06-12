@@ -65,7 +65,7 @@ export function CreateNewServiceWindow(props: any) {
         <DialogHeader>
           <DialogTitle>Создать новую услугу</DialogTitle>
           <DialogDescription>
-            Необходимо заполнить следующие поля для созздания новой услуги
+            Необходимо заполнить следующие поля для создания новой услуги
           </DialogDescription>
         </DialogHeader>
 

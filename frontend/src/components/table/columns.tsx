@@ -9,7 +9,7 @@ import internal from "node:stream";
 // They define the data that will be displayed, how it will be formatted, sorted and filtered.
 
 // This type is used to define the shape of our data.
-// TODO: Переопределить куда то в ффайл отдельный
+// TODO: Переопределить куда то в файл отдельный
 export type Contract = {
   id: number
   name: string
