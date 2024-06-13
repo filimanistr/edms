@@ -11,6 +11,7 @@ import {
 const PATH: string = "api/contracts/";
 const URL: string = HOST + PATH;
 
+
 export async function getContracts(): Promise<Contract[]> {
   return await makeGetRequest(URL)
 }
@@ -32,6 +33,11 @@ export async function updateContract(id: number, data: object)  {
 export async function getFields() {
   /* Поля что нужны для создания контракта */
   return await makeGetRequest(URL+"fields/")
+}
+
+export async function getKeyFields(data: object) {
+  /* Получает данные исполнителя и заказчика для создания договора */
+  return await makePostRequest(URL+"keys/", data)
 }
 
 

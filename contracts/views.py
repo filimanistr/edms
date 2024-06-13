@@ -13,16 +13,16 @@ class Contract(APIView):
     """Retrieve, update or delete a contract instance."""
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, contract_id, format=None):
+    def get(self, request, contract_id):
         r = get_contract(contract_id)
         if request.user.email in ADMINS:
             r["role"] = "admin"
         else:
             r["role"] = "user"
 
-        return JsonResponse(r)
+        return Response(r)
 
-    def patch(self, request, contract_id, format=None):
+    def patch(self, request, contract_id):
         """Варианта 2: обновление статуса клиентом
                        обновление статуса сервером
                        выбран последний"""
@@ -115,7 +115,7 @@ class Templates(APIView):
             template = request.data['template']
             service_id = request.data["service"]
             name = request.data["name"]
-            template = create_new_template(name, service_id, template)
+            template = create_new_template(name, service_id, template, request.user.id)
 
             # TODO: Куда то бы вынести все эти сообщения в файлик отдельный,
             if template is None:
@@ -202,21 +202,23 @@ class ContractPreview(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        email = request.user.email
         c = request.data["counterparty"]
         s = request.data["service"]
         t = request.data["template"]
         n = request.data["name"]
 
+        # if user is not admin counterparty field would be empty,
+        # so we take current user id to create contract for him
+        email = request.user.email
         if email not in ADMINS:
             c = request.user.id
 
-        r = create_contract_preview(counterparty_id=c,
-                                    service_id=s,
-                                    template_id=t,
-                                    name=n)
-
-        return JsonResponse(r, safe=False)
+        return Response(create_contract_preview(
+            counterparty_id=c,
+            service_id=s,
+            template_id=t,
+            name=n
+        ))
 
 
 class ContractSave(APIView):

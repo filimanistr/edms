@@ -3,7 +3,6 @@
 import {
   useEffect,
   useState,
-  useRef
 } from "react";
 import {
   Dialog,
@@ -17,7 +16,9 @@ import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger
@@ -30,29 +31,24 @@ import {ScrollArea} from "@/components/ui/scroll-area";
 import {SelectWithSearch} from "@/components/windows"
 import {PlateEditor} from "@/components/plate-editor";
 import {useRouter} from "next/navigation"
-import { AlertCircle } from "lucide-react"
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert"
 
 import {
   Service,
   Template,
-  Counterparty,
-  Data, ContractPreview
+  Data, 
+  ContractPreview
 } from "./types"
 
 import {
   createPreviewContract,
   createNewContract,
-  getFields, savePreviewContract
+  getFields, 
+  savePreviewContract
 } from "./api";
-import {useEditorRef} from "@udecode/plate-common";
+
 
 export function CreateContractWindow(props: any) {
-  // Отображает только те шаблоны которые соответсвуют услуге
+  // Отображает только те шаблоны которые соответствуют услуге
   const { toast } = useToast()
   const [isAdmin, setIsAdmin] = useState(false)
   const [disable, setDisable] = useState(true)          // Отображение кнопки сохранения
@@ -158,9 +154,6 @@ export function CreateContractWindow(props: any) {
       service: service,
       name: name
     })
-
-    res.user["service__name"] = res.service__name
-    res.user["contract__name"] = res.name
 
     setPreview(res);
     setEditorValue(res.contract)
@@ -358,7 +351,7 @@ export function CreateContractWindow(props: any) {
                   <ScrollArea className="absolute top-0 pr-6">
                     <PlateEditor text={preview.contract}
                                  readOnly={false}
-                                 userData={preview.user}
+                                 userData={preview.keys}
                                  onChange={(newValue: any) => {
                                    setEditorValue(newValue)
                                  }}

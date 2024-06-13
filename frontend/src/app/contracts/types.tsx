@@ -19,7 +19,7 @@ export type ContractPreview = {
   contract?: object
   template__name?: string
   service__name?: string
-  user?: object
+  keys?: object
 }
 
 export interface Data {

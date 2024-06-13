@@ -1,5 +1,5 @@
 ﻿
-# Глобальные переменные / константы
+# Глобальные переменные
 
 ***REMOVED***
 
@@ -9,12 +9,18 @@ STATUSES = ["ожидает согласования заказчиком",
 
 ADMINS = (
     "filimanistr@gmail.com",
+    "0@gmail.com",
 )
 
 
-KEY_FIELDS = {
-    'номер договора': 'contract__name',
-    'название услуги': 'service__name',
+CONTRACT_KEY_FIELDS = {
+    "название договора": "contract__name",
+    "название услуги": "service__name",
+    "стоимость услуги": "service__price",
+    "год услуги": "service__year"
+}
+
+COUNTERPARTY_KEY_FIELDS = {
     'фамилия': 'head_last_name',
     'имя': 'head_first_name',
     'отчество': 'head_middle_name',
@@ -30,6 +36,6 @@ KEY_FIELDS = {
     'бик банка': 'BIC',
     'корреспондентский счет': 'correspondent_account',
     'расчетный счет': 'checking_account',
-    'личный счет': 'personal_account'
+    'лицевой счет': 'personal_account'
 }
 

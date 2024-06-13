@@ -1,18 +1,15 @@
 ﻿from django.utils import timezone
-from django.http import QueryDict
 from django.forms.models import model_to_dict
-from django.db.models import Max
 
-from weasyprint import HTML, CSS
-
-from .models import Contract, ContractsHistory, ContractTemplate, Counterparty, ServicesReference
-from .config import ADMINS, KEY_FIELDS
+from .models import Contract, ContractTemplate, Counterparty, ServicesReference
+from .config import ADMINS, COUNTERPARTY_KEY_FIELDS, CONTRACT_KEY_FIELDS
 
 # Тут описывается вся бизнес логика
 # т.е. Model слой в паттерне MVC
 
 # TODO: Растолкать все по отдельным файлам contract_services скажем
 #       но после рефакторинга всего вот этого вот, может у DRF что круче есть
+
 
 def get_all_contracts() -> list:
     q = Contract.objects.values("id",
@@ -27,17 +24,31 @@ def get_all_contracts() -> list:
 
 
 def get_contract(contract_id: int) -> dict:
-    q = Contract.objects.values("id",
-                                "name",
-                                "contract",
-                                "counterparty__id",
-                                "counterparty__name",
-                                "template__id",
-                                "template__name",
-                                "template__service__name",
-                                "status",
-                                "year").get(pk=contract_id)
-    return q
+    """Returns contract with `user` and `admin` data being passed in `key` field,
+    these fields is being used to insert it fast to contract
+
+    Maybe the better option would be to create separate endpoint to provide `key fields`,
+    but for now this approach looks better because we don't have to request data
+    multiple times to the server"""
+    admin_data = Counterparty.objects.get(id__email__in=ADMINS)
+    q = Contract.objects.get(pk=contract_id)
+    keys = get_key_fields(q.name,
+                          q.template.service,
+                          q.counterparty,
+                          admin_data)
+    return {
+        "id": q.id,
+        "name": q.name,
+        "contract": q.contract,
+        "counterparty__id": q.counterparty.id_id,
+        "counterparty__name": q.counterparty.name,
+        "template__id": q.template.id,
+        "template__name": q.template.name,
+        "template__service__name": q.template.service.name,
+        "status": q.status,
+        "year": q.year,
+        "keys": keys
+    }
 
 
 def get_user_contracts(user_id: int) -> list:
@@ -53,25 +64,41 @@ def get_user_contracts(user_id: int) -> list:
     return list(q.order_by("pk"))
 
 
-# TODO: МБ аргументы сократить до 2, что надо вставить и куда вставить 
-def form_contract(counterparty: Counterparty,  # data that will be inserted
-                  template: dict,
-                  contract_name: str,
-                  service_name: str) -> dict:
-    """Creating contracts based of a template"""
+def get_key_fields(contract_name: str,
+                   service: ServicesReference,
+                   user_data: Counterparty,
+                   admin_data: Counterparty) -> dict:
+    """Collects dict of key fields for contract forming"""
+    return {
+        "contract__name": contract_name,
+        "service__name": service.name,
+        "service__price": str(service.price),
+        "service__year": str(service.year),
+        "исп": model_to_dict(admin_data),
+        "зак": model_to_dict(user_data)
+    }
+
+
+def form_contract(template: dict, data: dict) -> dict:
+    """Creates contract from a template by inserting `data` to it"""
+    [ print(i, end="\n") for i in template]
+
     for leaf in template:
         for node in leaf["children"]:
-            backgroundColor = node.get("backgroundColor")
-            text = node["text"].lower().strip()
-            if backgroundColor == "#FEFF00":
-                if text == "название услуги":
-                    node["text"] = str(service_name)
+            background_color = node.get("backgroundColor")
+            text = node.get("text")
+
+            if text is not None and background_color == "#FEFF00":
+                text = text.lower().strip()
+                if text in CONTRACT_KEY_FIELDS.keys():
+                    node["text"] = str(data[CONTRACT_KEY_FIELDS[text]])
                     node["backgroundColor"] = ""
-                elif text == "номер договора":
-                    node["text"] = str(contract_name)
-                    node["backgroundColor"] = ""
-                elif text in KEY_FIELDS.keys():
-                    node["text"] = str(getattr(counterparty, KEY_FIELDS[text]))
+                    continue
+
+                field = text.rsplit(' ', 1)[0]
+                if field in COUNTERPARTY_KEY_FIELDS.keys():
+                    prefix = text.split()[-1]
+                    node["text"] = str(data[prefix][COUNTERPARTY_KEY_FIELDS[field]])
                     node["backgroundColor"] = ""
 
     return template
@@ -83,6 +110,8 @@ def create_new_contract(user: str,
                         template_id: int,
                         name: str) -> dict:
     counterparty = Counterparty.objects.get(pk=counterparty_id)
+    admin_counterparty = Counterparty.objects.get(id__email__in=ADMINS)
+
     service = ServicesReference.objects.get(pk=service_id)
     template = ContractTemplate.objects.get(pk=template_id)
     if user in ADMINS:
@@ -104,35 +133,42 @@ def create_new_contract(user: str,
 
     # TODO: вот тут бы свою ошибку сделать
     if not created: return None
-    data = form_contract(counterparty, obj.contract, obj.name, service.name)
-    obj.contract = data
+    data = get_key_fields(name, service, counterparty, admin_counterparty)
+    contract = form_contract(obj.contract, data)
+    obj.contract = contract
     obj.save()
 
     r = model_to_dict(obj)
-    r["counterparty__name"] = counterparty.name
-    r["template__name"] = template.name
+    r["keys"] = data
     return r
 
-def create_contract_preview(counterparty_id,
-                            service_id,
-                            template_id,
+
+def create_contract_preview(counterparty_id: int,  # should always be user id, not admin
+                            service_id: int,
+                            template_id: int,
                             name) -> dict:
     """Creates contract but not saves to database
 
     Returns contract and data that comes with it.
     Also includes user data to insert it in editor into contract
-    So client dont need to request it again (saves time)"""
+    So client don't need to request it again (saves time)"""
     counterparty = Counterparty.objects.get(pk=counterparty_id)
+    admin_counterparty = Counterparty.objects.get(id__email__in=ADMINS)
+
     service = ServicesReference.objects.get(pk=service_id)
     template = ContractTemplate.objects.get(pk=template_id)
-    preview = form_contract(counterparty, template.template, name, service.name)
+
+    data = get_key_fields(name, service, counterparty, admin_counterparty)
+    preview = form_contract(template.template, data)
+
     return {
         "name": name,
         "template__name": template.name,
         "service__name": service.name,
         "contract": preview,
-        "user": model_to_dict(counterparty)
+        "keys": data
     }
+
 
 def save_contract_preview(user: str,
                           contract: list,
@@ -142,7 +178,6 @@ def save_contract_preview(user: str,
                           name: str) -> dict:
     """Save contract to db without forming it based on a template"""
     counterparty = Counterparty.objects.get(pk=counterparty_id)
-    service = ServicesReference.objects.get(pk=service_id)
     template = ContractTemplate.objects.get(pk=template_id)
     if user in ADMINS:
         status = "ожидает согласования заказчиком"
@@ -171,15 +206,17 @@ def save_contract_preview(user: str,
     return r
 
 
-def create_new_template(name: str, service_id: int, template: str) -> dict:
+def create_new_template(name: str, service_id: int, template: str, creator_id: int) -> dict:
     service = ServicesReference.objects.get(pk=service_id)
+    creator = Counterparty.objects.get(pk=creator_id)
 
     # don't create template with same name for one service
     obj, created = ContractTemplate.objects.get_or_create(
         name=name,
         service=service,
         defaults={
-            "template":template
+            "creator": creator,
+            "template": template
         }
     )
 
@@ -287,8 +324,9 @@ def update_contract(user: str, contract_id: int, new_contract: list) -> None:
 
 
 def get_all_counterparties() -> list[dict]:
-    r = Counterparty.objects.all().values()
+    r = Counterparty.objects.all().exclude(id__email__in=ADMINS).values()
     return list(r.order_by("pk"))
+
 
 def get_counterparty_data(counterparty_id: int) -> list[dict]:
     r = Counterparty.objects.get(pk=counterparty_id)
@@ -320,7 +358,7 @@ def get_fields() -> dict:
 
     Шаблоны должны соответствовать их услугам"""
     # TODO: Обернуть в транзакцию
-    counterparties = Counterparty.objects.values("id", "name")
+    counterparties = Counterparty.objects.exclude(id__email__in=ADMINS).values("id", "name")
     services = ServicesReference.objects.values("id", "name")
     templates = ContractTemplate.objects.values("id", "name", "service")
 

@@ -1,17 +1,13 @@
 import Header from "@/components/header";
-import { getContract, updateContract } from "../api";
-import { getCounterparty } from "../../counterparties/api"
+import { getContract, updateContract, getKeyFields } from "../api";
 import {PlateEditor} from "@/components/plate-editor";
 import {ContractActions} from "@/app/contracts/[id]/actions";
 
 export default async function ContractPage({params}: any) {
-  const page: string = "/contracts"
-  const data = await getContract(params.id)
+  const page: string = "/contracts";
+  const data = await getContract(params.id);
 
-  // TODO: Мдаааааааааааааааааааа :/
-  const userData = await getCounterparty(data.counterparty__id);
-  userData["service__name"] = data.template__service__name
-  userData["contract__name"] = data.name
+  console.log("Дата: ", data)
 
   return (
     <>
@@ -31,7 +27,7 @@ export default async function ContractPage({params}: any) {
           <br/>
         </p>
 
-        <PlateEditor text={data.contract} userData={userData}>
+        <PlateEditor text={data.contract} userData={data.keys}>
           <ContractActions data={data} update={updateContract}/>
         </PlateEditor>
       </main>

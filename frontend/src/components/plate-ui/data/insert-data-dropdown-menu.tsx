@@ -17,6 +17,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSubContent,
   useOpenState,
 } from '../dropdown-menu';
 import { ToolbarButton } from '../toolbar';
@@ -26,15 +30,26 @@ const items = [
     label: 'Вставить данные',
     items: [
       {
-        label: 'Номер договора',
+        label: 'Название договора',
         value: 'contract__name',
       },
       {
         label: 'Название услуги',
         value: 'service__name',
       },
+      {
+        label: 'Стоимость услуги',
+        value: 'service__price',
+      },
+      {
+        label: 'Год услуги',
+        value: 'service__year',
+      },
     ],
   },
+];
+
+const items2 = [
   {
     label: 'Личные данные',
     items: [
@@ -109,12 +124,52 @@ const items = [
         value: 'checking_account',
       },
       {
-        label: 'Личный счет',
+        label: 'Лицевой счет',
         value: 'personal_account',
       },
     ],
   },
 ];
+
+function SubMenu({title, postfix, editor, userData } : any) {
+  return (
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger>
+        <span>{title}</span>
+      </DropdownMenuSubTrigger>
+      <DropdownMenuPortal>
+        <DropdownMenuSubContent className="flex max-h-[500px] min-w-0 flex-col gap-0.5 overflow-y-auto">
+
+          {items2.map(({ items: nestedItems, label }, index) => (
+            <React.Fragment key={label}>
+              {index !== 0 && <DropdownMenuSeparator />}
+
+              <DropdownMenuLabel>{label}</DropdownMenuLabel>
+              {nestedItems && nestedItems.map(({label:itemLabel, value: type}) => (
+                  <DropdownMenuItem
+                    key={type}
+                    className="min-w-[180px]"
+                    onSelect={ async () => {
+                      userData ? insertText(editor, userData[postfix][type]) : insertNodes(editor, [
+                        {text: itemLabel + " " + postfix, backgroundColor: "#FEFF00"},
+                        {text: " "}
+                      ])
+                      focusEditor(editor);
+                    }}
+                  >
+                    {itemLabel}
+                  </DropdownMenuItem>
+                )
+              )}
+            </React.Fragment>
+          ))}
+
+
+        </DropdownMenuSubContent>
+      </DropdownMenuPortal>
+    </DropdownMenuSub>
+  )
+}
 
 export function InsertDataDropdownMenu({userData = null}) {
   const editor = useEditorRef();
@@ -132,31 +187,26 @@ export function InsertDataDropdownMenu({userData = null}) {
         align="start"
         className="flex max-h-[500px] min-w-0 flex-col gap-0.5 overflow-y-auto"
       >
+
+        <DropdownMenuLabel>Вставить данные</DropdownMenuLabel>
+        <SubMenu title="Заказчика" postfix="зак" editor={editor} userData={userData}/>
+        <SubMenu title="Исполнителя" postfix="исп" editor={editor} userData={userData}/>
+
         {items.map(({ items: nestedItems, label }, index) => (
           <React.Fragment key={label}>
             {index !== 0 && <DropdownMenuSeparator />}
 
-            <DropdownMenuLabel>{label}</DropdownMenuLabel>
-            {nestedItems.map(({label:itemLabel, value: type}) => (
+
+            {nestedItems && nestedItems.map(({label:itemLabel, value: type}) => (
                 <DropdownMenuItem
                   key={type}
                   className="min-w-[180px]"
-                  onSelect={() => {
-                    { userData === null
-                      ?
-                      insertNodes(
-                        editor, [
-                          {
-                            text: itemLabel,
-                            backgroundColor: "#FEFF00",
-                          },
-                          {
-                            text: " "
-                          }]
-                      )
-                      : insertText(editor, userData[type])
-                    }
-                      focusEditor(editor);
+                  onSelect={ async () => { userData ? insertText(editor, userData[type]) :
+                    insertNodes(editor, [
+                      {text: itemLabel, backgroundColor: "#FEFF00"},
+                      {text: " "}]
+                    )
+                    focusEditor(editor);
                   }}
                 >
                   {itemLabel}

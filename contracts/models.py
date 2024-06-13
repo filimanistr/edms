@@ -10,24 +10,18 @@ class Counterparty(models.Model):
                             db_column="наименование_краткое")
     full_name = models.TextField("наименование полное",
                                  db_column="наименование_полное")
-    INN = models.DecimalField("ИНН", max_digits=12, decimal_places=0,
-                              db_column="ИНН")
-    KPP = models.DecimalField("КПП", max_digits=9, decimal_places=0,
-                              db_column="КПП")
+    INN = models.CharField("ИНН", max_length=10, db_column="ИНН")
+    KPP = models.CharField("КПП", max_length=9,db_column="КПП")
 
     # Банковская информация
     bank_name = models.TextField("наименование банка",
                                  db_column="наименование_банка")
     BIC = models.TextField("БИК", db_column="БИК")
-    correspondent_account = models.DecimalField("корр/счет",
-                                                max_digits=20,
-                                                decimal_places=0,
-                                                db_column="корр/счет")
-    checking_account = models.DecimalField("р/с",
-                                           max_digits=20,
-                                           decimal_places=0,
-                                           db_column="р/с")
-    personal_account = models.TextField("л/с", db_column="л/с")
+    correspondent_account = models.CharField("корр/счет",
+                                             max_length=20,
+                                             db_column="корр/счет")
+    checking_account = models.CharField("р/с", max_length=20, db_column="р/с")
+    personal_account = models.CharField("л/с", max_length=20, db_column="л/с")
 
     # ФИО Руководителя и на основании чего действует руководитель
     head_first_name = models.TextField("имя", db_column="имя")
@@ -84,6 +78,10 @@ class ContractTemplate(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.TextField("наименование", db_column="наименование")
     template = models.JSONField("шаблон", db_column="шаблон")
+    creator = models.ForeignKey(Counterparty,
+                                on_delete=models.CASCADE,
+                                verbose_name="автор",
+                                db_column="автор")
     service = models.ForeignKey(ServicesReference,
                                 on_delete=models.CASCADE,
                                 verbose_name="услуга",
