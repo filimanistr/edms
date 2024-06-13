@@ -81,26 +81,30 @@ def get_key_fields(contract_name: str,
 
 def form_contract(template: dict, data: dict) -> dict:
     """Creates contract from a template by inserting `data` to it"""
-    [ print(i, end="\n") for i in template]
+
+    def replace_text(node):
+        if isinstance(node, dict):
+            for key, value in node.items():
+                if key == 'text' and node.get("backgroundColor") == "#FEFF00":
+                    text = value.lower().strip()
+                    if text in CONTRACT_KEY_FIELDS.keys():
+                        node["text"] = str(data[CONTRACT_KEY_FIELDS[text]])
+                        node["backgroundColor"] = ""
+                        continue
+
+                    field = text.rsplit(' ', 1)[0]
+                    if field in COUNTERPARTY_KEY_FIELDS.keys():
+                        prefix = text.split()[-1]
+                        node["text"] = str(data[prefix][COUNTERPARTY_KEY_FIELDS[field]])
+                        node["backgroundColor"] = ""
+                else:
+                    replace_text(value)
+        elif isinstance(node, list):
+            for item in node:
+                replace_text(item)
 
     for leaf in template:
-        for node in leaf["children"]:
-            background_color = node.get("backgroundColor")
-            text = node.get("text")
-
-            if text is not None and background_color == "#FEFF00":
-                text = text.lower().strip()
-                if text in CONTRACT_KEY_FIELDS.keys():
-                    node["text"] = str(data[CONTRACT_KEY_FIELDS[text]])
-                    node["backgroundColor"] = ""
-                    continue
-
-                field = text.rsplit(' ', 1)[0]
-                if field in COUNTERPARTY_KEY_FIELDS.keys():
-                    prefix = text.split()[-1]
-                    node["text"] = str(data[prefix][COUNTERPARTY_KEY_FIELDS[field]])
-                    node["backgroundColor"] = ""
-
+        replace_text(leaf)
     return template
 
 
