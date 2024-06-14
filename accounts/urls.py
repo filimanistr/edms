@@ -7,22 +7,8 @@ from . import views
 # accounts URLconf
 
 urlpatterns = [
-    # path("register/", RegisterView.as_view(), name="rest_register"),
-    path("login/", views.login, name="rest_login"),
-    # path("logout/", LogoutView.as_view(), name="rest_logout"),
-    # path("user/", UserDetailsView.as_view(), name="rest_user_details"),
-
-    path('profile/',
-         views.profile,
-         name='profile',
-         ),
-    path('register/',
-         views.register,
-         name='register'
-         ),
-
-    path('fields/',
-         views.fields,
-         name='fields'
-         ),
+    path("register/", views.register, name="register"),
+    path("login/", views.login, name="login"),
+    path("logout/", views.Logout.as_view(), name="logout"),
+    path("user/", views.UserDetailsView.as_view(), name="user_details"),
 ]

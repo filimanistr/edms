@@ -18,7 +18,7 @@ export async function makeGetRequest(url: string) {
   return await res.json();
 }
 
-export async function makePostRequest(url: string, data: any) {
+export async function makePostRequest(url: string, data: any = null) {
   const cookieStore = cookies()
   const token = cookieStore.get("token")!.value
 
@@ -36,7 +36,8 @@ export async function makePostRequest(url: string, data: any) {
   )
 
   // Ошибки в принцепе тоже ловит, если они с сервера идут как JSON
-  return await res.json();
+  if (data !== null)
+    return await res.json();
 }
 
 export async function makePutRequest(url: string, data: any) {

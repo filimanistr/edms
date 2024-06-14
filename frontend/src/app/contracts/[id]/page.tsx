@@ -7,8 +7,6 @@ export default async function ContractPage({params}: any) {
   const page: string = "/contracts";
   const data = await getContract(params.id);
 
-  console.log("Дата: ", data)
-
   return (
     <>
       <Header page={page}/>

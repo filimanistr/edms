@@ -2,8 +2,10 @@
 
 import { cookies } from "next/headers";
 import { HOST } from "@/config";
+import {makeGetRequest, makePostRequest} from "@/api";
+import { redirect } from 'next/navigation'
 
-const PATH: string = "api/accounts/login/";
+const PATH: string = "api/accounts/";
 const URL: string = HOST + PATH;
 
 export async function getToken(user: object) {
@@ -14,7 +16,7 @@ export async function getToken(user: object) {
   // Если все успешно возвращает true
   // Если не очень - текст с ошибками
 
-  const res = await fetch(URL, {
+  const res = await fetch(URL+"login/", {
       method: "POST",
       headers: {"Content-type": "application/json"},
       body: JSON.stringify(user),
@@ -35,4 +37,10 @@ export async function getToken(user: object) {
   } else {
     return data;
   }
+}
+
+export async function logOut() {
+  await makePostRequest(URL+"logout/")
+  cookies().delete('token')
+  redirect("account/auth/")
 }

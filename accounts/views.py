@@ -6,6 +6,8 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
 
 from django.db.utils import IntegrityError
 
@@ -18,10 +20,6 @@ from .forms import NewCounterpartyForm, NewUserForm
 from .config import WEB_REGISTRATION_FIELDS, DADATA_API_TOKEN, \
                     COUNTERPARTY_MODEL_FIELDS, DADATA_SECRET_KEY
 
-
-def fields(request):
-    """Returns the fields that web form should have"""
-    return JsonResponse(WEB_REGISTRATION_FIELDS, safe=False)
 
 
 dadata = Dadata(DADATA_API_TOKEN, DADATA_SECRET_KEY)
@@ -92,8 +90,15 @@ def login(request):
     return response
 
 
+class Logout(APIView):
+    def post(self, request, format=None):
+        request.user.auth_token.delete()
+        return Response(status=status.HTTP_200_OK)
+
+
+
+@api_view(["POST"])
 def register(request):
-    # TODO: Удалить к чертям, поправить
     """То как я это понимаю спустя 10 месяцев:
     используются сразу 2 формы для регистрации"""
     if request.method == 'POST':
@@ -115,8 +120,10 @@ def register(request):
     return render(request, 'register.html')
 
 
-def profile(request):
-    pass
+class UserDetailsView(APIView):
+    
+    def get(request):
+        pass
 
 
 
