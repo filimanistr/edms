@@ -3,10 +3,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from django.db import IntegrityError
 
+from .serializers import *
+from .models import Counterparty
 from .services import *
-
-# TODO: Тут нужны drf generic base classes 
 
 
 class Contract(APIView):
@@ -117,7 +118,7 @@ class Templates(APIView):
             name = request.data["name"]
             template = create_new_template(name, service_id, template, request.user.id)
 
-            # TODO: Куда то бы вынести все эти сообщения в файлик отдельный,
+            # TODO: Куда то бы вынести все эти сообщения в файл отдельный,
             if template is None:
                 return Response({
                     "success": False,
@@ -129,7 +130,7 @@ class Templates(APIView):
         return HttpResponse(status=403)
 
 
-class Counterparties(APIView):
+class CounterpartiesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -138,22 +139,26 @@ class Counterparties(APIView):
             return JsonResponse(r, safe=False)
         return HttpResponse(status=403)
 
-    def post(self, request):
-        # TODO: Создание новых контрагентов от лица админа
-        pass
+    def patch(self, request):        
+        c = Counterparty.objects.get(pk=request.user.id)
+        serializer = CounterpartySerializer(c, data=request.data, partial=True)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+            except IntegrityError:
+                return Response({"message": "Данная почта уже занята"},
+                                status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "Данные успешно изменены"}, status=200)
+        return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
 
-class Counterparty(APIView):
+class CounterpartyView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, counterparty_id, format=None):
-        if request.user.id == counterparty_id or request.user.email in ADMINS:
-            r = get_counterparty_data(counterparty_id)
-            return JsonResponse(r, safe=False)
-        return HttpResponse(status=403)
-
-    def post(self, request):
-        pass
+    def get(self, request):
+        c = Counterparty.objects.get(pk=request.user.id)
+        serializer = CounterpartySerializer(c, context={"email": request.user.email})
+        return Response(serializer.data)
 
 
 class Services(APIView):

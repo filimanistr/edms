@@ -74,4 +74,9 @@ export async function MakePatchRequest(url: string, data: any) {
       cache: 'no-store'
     }
   )
+
+  if (data !== null) {
+    return await res.json();
+  }
+
 }

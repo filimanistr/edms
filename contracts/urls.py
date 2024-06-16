@@ -13,8 +13,8 @@ urlpatterns = [
     path('api/templates/', views.Templates.as_view(), name='templates'),
     path('api/templates/<int:template_id>/', views.Template.as_view(), name='template'),
 
-    path('api/counterparties/', views.Counterparties.as_view(), name='counterparties'),
-    path('api/counterparties/<int:counterparty_id>/', views.Counterparty.as_view(), name='counterparties'),
+    path('api/counterparties/', views.CounterpartiesView.as_view(), name='counterparties'),
+    path('api/counterparty/', views.CounterpartyView.as_view(), name='counterparties'),
 
     path('api/services/', views.Services.as_view(), name='services'),
 ]

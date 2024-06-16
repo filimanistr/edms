@@ -2,14 +2,16 @@
 
 import {
   DropdownMenu,
-  DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import {Button} from "@/components/ui/button";
-import {CircleUser} from "lucide-react";
-import {logOut} from "@/app/account/api";
+import { Button } from "@/components/ui/button";
+import { CircleUser } from "lucide-react";
+import { logOut } from "@/app/account/api";
+import Link from "next/link"
 
 export default function AccountMenu() {
 
@@ -28,10 +30,14 @@ export default function AccountMenu() {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Мой аккаунт</DropdownMenuLabel>
         <DropdownMenuSeparator/>
-        <DropdownMenuItem>Настройки</DropdownMenuItem>
-        <DropdownMenuItem>Поддержка</DropdownMenuItem>
-        <DropdownMenuSeparator/>
-        <DropdownMenuItem onClick={handleLogout}>Выход</DropdownMenuItem>
+        <Link replace href="/account/">
+          <DropdownMenuItem>
+            Настройки
+          </DropdownMenuItem>
+        </Link>
+        <DropdownMenuItem onClick={handleLogout}>
+          Выход
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

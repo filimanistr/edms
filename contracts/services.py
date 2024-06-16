@@ -332,11 +332,6 @@ def get_all_counterparties() -> list[dict]:
     return list(r.order_by("pk"))
 
 
-def get_counterparty_data(counterparty_id: int) -> list[dict]:
-    r = Counterparty.objects.get(pk=counterparty_id)
-    return model_to_dict(r)
-
-
 def get_services() -> list[dict]:
     r = ServicesReference.objects.all().values()
     return list(r.order_by("pk"))

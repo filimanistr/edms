@@ -2,7 +2,11 @@
 
 import { cookies } from "next/headers";
 import { HOST } from "@/config";
-import {makeGetRequest, makePostRequest} from "@/api";
+import {
+  makeGetRequest,
+  MakePatchRequest,
+  makePostRequest
+} from "@/api";
 import { redirect } from 'next/navigation'
 
 const PATH: string = "api/accounts/";

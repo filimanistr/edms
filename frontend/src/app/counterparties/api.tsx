@@ -2,16 +2,18 @@
 
 import { HOST } from "@/config";
 import {
-  makeGetRequest
+  makeGetRequest,
+  MakePatchRequest
 } from "@/api";
 
-const PATH: string = "api/counterparties/";
-const URL: string = HOST + PATH;
-
 export async function getCounterparties()  {
-  return await makeGetRequest(URL);
+  return await makeGetRequest(HOST + "api/counterparties/");
 }
 
-export async function getCounterparty(id: number)  {
-  return await makeGetRequest(URL+id+'/');
+export async function getCounterparty()  {
+  return await makeGetRequest(HOST + "api/counterparty/");
+}
+
+export async function updateCounterparty(data: object) {
+  return await MakePatchRequest(HOST + "api/counterparties/", data)
 }
