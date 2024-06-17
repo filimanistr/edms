@@ -3,9 +3,7 @@
 import { cookies } from "next/headers";
 import { HOST } from "@/config";
 import {
-  makeGetRequest,
-  MakePatchRequest,
-  makePostRequest
+  makePostRequest,
 } from "@/api";
 import { redirect } from 'next/navigation'
 
@@ -47,4 +45,30 @@ export async function logOut() {
   await makePostRequest(URL+"logout/")
   cookies().delete('token')
   redirect("account/auth/")
+}
+
+export async function createCounterparty(data: object) {
+  const res = await fetch(URL+"register/", {
+      method: "POST",
+      headers: {"Content-type": "application/json"},
+      body: JSON.stringify(data),
+      cache: 'no-store'
+    }
+  )
+
+  let r = await res.json();
+
+  if (r.hasOwnProperty('token')) {
+    cookies().set({
+      name: 'token',
+      value: r.token,
+      httpOnly: true,
+      maxAge: 60*60*24*28,
+      path: '/',
+    })
+    return true;
+  } else {
+    return r;
+  }
+  
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import Login from "@/components/login"
-import Register from "@/components/register"
+import Login from "@/app/account/auth/login"
+import Register from "@/app/account/auth/register"
 import {useState} from "react";
 
 export default function Auth() {

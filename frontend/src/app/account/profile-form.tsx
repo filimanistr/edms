@@ -18,7 +18,6 @@ import { toast } from "@/components/ui/use-toast"
 import { incline } from 'lvovich';
 import { updateCounterparty } from "@/app/counterparties/api";
 import { ProfileFormValues, profileFormSchema } from "./types"
-import { last } from "lodash"
 
 export function ProfileForm({user} : {user: Partial<ProfileFormValues>}) {
   const form = useForm<ProfileFormValues>({
