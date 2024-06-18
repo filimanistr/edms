@@ -90,13 +90,13 @@ class Template(APIView):
     """Retrieve, update or delete a template instance."""
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, template_id, format=None):
+    def get(self, request, template_id):
         r = dict()
         r["is_admin"] = request.user.email in ADMINS
-        r["data"] = get_template(template_id)
+        r["data"] = get_template(template_id, request.user.id)
         return JsonResponse(r, safe=False)
 
-    def patch(self, request, template_id, format=None):
+    def patch(self, request, template_id):
         update_template(template_id, request.data)
         return HttpResponse(status=200)
 
@@ -112,22 +112,20 @@ class Templates(APIView):
         return JsonResponse(r, safe=False)
 
     def post(self, request):
-        if request.user.email in ADMINS:
-            template = request.data['template']
-            service_id = request.data["service"]
-            name = request.data["name"]
-            template = create_new_template(name, service_id, template, request.user.id)
+        template = request.data['template']
+        service_id = request.data["service"]
+        name = request.data["name"]
+        template = create_new_template(name, service_id, template, request.user.id)
 
-            # TODO: Куда то бы вынести все эти сообщения в файл отдельный,
-            if template is None:
-                return Response({
-                    "success": False,
-                    "title": "Шаблон с таким именем уже существует для данной услуги",
-                    "description": "Измените название шаблона или выберите другую услугу"
-                    }, status=status.HTTP_409_CONFLICT)
+        # TODO: Куда то бы вынести все эти сообщения в файл отдельный,
+        if template is None:
+            return Response({
+                "success": False,
+                "title": "Шаблон с таким именем уже существует для данной услуги",
+                "description": "Измените название шаблона или выберите другую услугу"
+                }, status=status.HTTP_409_CONFLICT)
 
-            return JsonResponse(template, safe=False)
-        return HttpResponse(status=403)
+        return JsonResponse(template, safe=False)
 
 
 class CounterpartiesView(APIView):

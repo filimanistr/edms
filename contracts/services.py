@@ -233,13 +233,15 @@ def get_contract_templates() -> list[dict]:
     return list(r.order_by("pk"))
 
 
-def get_template(template_id: int) -> dict:
-    q = ContractTemplate.objects.values("id",
-                                        "name",
-                                        "template",
-                                        "service__id",
-                                        "service__name").get(pk=template_id)
-    return q
+def get_template(template_id: int, user_id: int) -> dict:
+    template = ContractTemplate.objects.values("id",
+                                               "name",
+                                               "template",
+                                               "service__id",
+                                               "service__name",
+                                               "creator__id__id").get(pk=template_id)
+    template["editable"] = user_id == template.pop("creator__id__id")
+    return template
 
 
 def update_contract_status_by_the_client(user,

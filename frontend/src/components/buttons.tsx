@@ -62,11 +62,11 @@ export function HistoryButton({onclick}: any) {
   )
 }
 
-export function DeleteButton() {
+export function DeleteButton({disabled}: any) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button disabled={disabled} variant="outline" size="sm">
           <Trash2 size={18} color="#d11a2a" className="mr-2 h-4 w-4"/> Удалить
         </Button>
       </AlertDialogTrigger>

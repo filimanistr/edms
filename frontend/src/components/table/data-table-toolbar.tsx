@@ -48,23 +48,20 @@ export function DataTableToolbar<TData>({table, page, is_admin, data}: DataTable
         />
       )}
 
-      {/* TODO: Тут надо перечислять услуги */}
       {/*table.getColumn("service__name") && (
         <DataTableFacetedFilter
-          column={table.getColumn("status")}
-          title="Статусы"
-          options={[{
-            value: "согласован",
-            label: "согласован",
-          },
+          column={table.getColumn("template__type")}
+          title="Тип"
+          options={[
             {
-              value: "ожидает согласования поставщиком",
-              label: "ожидает согласования поставщиком",
+              value: "стандартный",
+              label: "стандартный",
             },
             {
-              value: "ожидает согласования заказчиком",
-              label: "ожидает согласования заказчиком",
-            }]}
+              value: "собственный",
+              label: "собственный",
+            }
+          ]}
         />
       )*/}
 
@@ -83,7 +80,7 @@ export function DataTableToolbar<TData>({table, page, is_admin, data}: DataTable
           </CreateContractWindow>
       }
       {
-        (page === "/templates" && is_admin) &&
+        (page === "/templates") &&
           <CreateTemplateWindow>
               <Button className="h-8 ml-auto focus-visible:ring-1 focus-visible:ring-offset-0" variant="outline" size="sm">
                   <Plus size={18} className="mr-2 h-4 w-4"/> Новый

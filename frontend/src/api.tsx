@@ -75,8 +75,9 @@ export async function MakePatchRequest(url: string, data: any) {
     }
   )
 
-  if (data !== null) {
+  try {
     return await res.json();
+  } catch (err) {
+    return
   }
-
 }
