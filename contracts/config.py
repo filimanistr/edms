@@ -1,16 +1,12 @@
-﻿
-# Глобальные переменные
+﻿import os
 
-***REMOVED***
+# Глобальные переменные
 
 STATUSES = ["ожидает согласования заказчиком",
             "ожидает согласование поставщиком",
             "согласован"]
 
-ADMINS = (
-    "filimanistr@gmail.com",
-    "0@gmail.com",
-)
+ADMINS = (os.getenv("EMAIL"), )
 
 
 CONTRACT_KEY_FIELDS = {

@@ -37,7 +37,7 @@ ACCOUNT_AUTHENTICATION_METHOD = 'email'
 DEBUG = True
 
 CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 'http://localhost:8000']
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'warm-octopus-11.telebit.io']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'warm-octopus-11.telebit.io', "server"]
 
 MEDIA_ROOT = '/home/vladimir/dev/edu contract system/data'
 MEDIA_URL = '/data/'
@@ -82,9 +82,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            BASE_DIR / 'templates',
-            BASE_DIR / 'contracts/templates',
-            BASE_DIR / 'accounts/templates',
+            BASE_DIR / 'templates'
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -110,7 +108,7 @@ DATABASES = {
         'NAME': 'EduContractSystem',
         'USER': 'faust',
         'PASSWORD': '123',
-        'HOST': '127.0.0.1',
+        'HOST': 'db',
         'PORT': '5432',
     }
 }
