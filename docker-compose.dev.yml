@@ -10,18 +10,30 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
       - pg_backups:/pg_backups
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   server:
-    build: .
-    command: python -m uvicorn config.asgi:application --host 0.0.0.0
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: python manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
     env_file:
       - ./.env.dev
+    volumes:
+      - .:/app
+      - /app/frontend/
     depends_on:
-      - db
+      db:
+        condition: service_healthy
   client:
-    build: ./frontend/
-    command: npm run start
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
     depends_on:

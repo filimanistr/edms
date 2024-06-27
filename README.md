@@ -6,24 +6,47 @@
 
 ## How to build
 
-Собрать и запустить docker образы:
+Копируем проект себе на машину и переходим в папку
 
 ```
 git clone https://github.com/filimanistr/edms/ && cd edms
-docker-compose build
-docker-compose up -d
-docker-compose run server python manage.py migrate
 ```
 
-Создать в системе исполнителя на основе данных в .env/dev
+Собираем docker образы
 
 ```
-docker-compose exec server python manage.py initadmins
+docker compose -f docker-compose.prod.yml build
+```
+
+Запускаем контейнеры
+```
+docker compose -f docker-compose.prod.yml up -d
+```
+
+Запускаем миграции
+
+```
+docker compose -f docker-compose.prod.yml exec server python manage.py migrate
+```
+
+Создаем в системе исполнителя на основе данных в .env/dev
+
+```
+docker compose -f docker-compose.prod.yml exec server python manage.py initadmins
 ```
 
 go to [localhost:3000](http://localhost:3000/) под почтой `admin@gmail.com` и паролем `admin`
 
 Если деплоить это и дальше, то нужен веб сервер вне контейнера и базу с контейнера на отдельный сервер закинуть, тогда надо переписывать docker-compose.yml и не только. Сейчас оно здесь представлено в ознакомительном виде
+
+## How to clean
+
+Чтобы удалить все контейнеры, их образы и volumes, созданные командой выше
+
+```
+docker compose -f docker-compose.prod.yml down -v --rmi local
+```
+
 ## TODO:
 
 1. History of changes
@@ -33,7 +56,8 @@ go to [localhost:3000](http://localhost:3000/) под почтой `admin@gmail.
 5. Веб сокеты мб чтобы статусы договоров обновлять без перезагрузки 
 6. Аутентификация, рассмотреть другие варианты 
 7. Тесты бы сделать
-8. swagger (дока к апи)
+8. Documenting API
+9. Docker multi staged build
 
 По клиентской части таски 
 1. Show services at the window not in the other page

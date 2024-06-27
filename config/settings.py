@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 from corsheaders.defaults import default_headers
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,13 +37,13 @@ ACCOUNT_AUTHENTICATION_METHOD = 'email'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
+CORS_ALLOW_METHODS = ['POST', 'OPTIONS']
+CORS_ALLOW_HEADERS = list(default_headers) + ['Set-Cookie', 'credentials']
 CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 'http://localhost:8000']
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'warm-octopus-11.telebit.io', "server"]
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', "server"]
 
-MEDIA_ROOT = '/home/vladimir/dev/edu contract system/data'
-MEDIA_URL = '/data/'
-
-LOGIN_URL = '/api/accounts/login/'
 AUTH_USER_MODEL = "accounts.User"
 
 # Application definition
@@ -133,17 +134,12 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-         "rest_framework.authentication.TokenAuthentication",
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10
 }
-
-
-# Auth
-
-AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -161,19 +157,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / "static/",
-    BASE_DIR / "accounts/static/",
-]
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-DATA_UPLOAD_MAX_MEMORY_SIZE = 100000000
 
-
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
-CORS_ALLOW_METHODS = ['POST', 'OPTIONS']
-CORS_ALLOW_HEADERS = list(default_headers) + ['Set-Cookie', 'credentials']

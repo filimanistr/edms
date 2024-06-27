@@ -15,11 +15,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.conf.urls.static import static
-from django.conf import settings
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from rest_framework.urlpatterns import format_suffix_patterns
+
 
 urlpatterns = [
     path('', include('contracts.urls')),
     path('api/accounts/', include('accounts.urls')),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('admin/', admin.site.urls),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+urlpatterns += staticfiles_urlpatterns()
+urlpatterns = format_suffix_patterns(urlpatterns)
