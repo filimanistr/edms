@@ -9,7 +9,7 @@
 Копируем проект себе на машину и переходим в папку
 
 ```
-git clone https://github.com/filimanistr/edms/ && cd edms
+git clone --depth 1 https://github.com/filimanistr/edms/ && cd edms
 ```
 
 Собираем docker образы
@@ -57,7 +57,6 @@ docker compose -f docker-compose.prod.yml down -v --rmi local
 6. Аутентификация, рассмотреть другие варианты 
 7. Тесты бы сделать
 8. Documenting API
-9. Docker multi staged build
 
 По клиентской части таски 
 1. Show services at the window not in the other page
