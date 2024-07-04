@@ -128,9 +128,9 @@ class ContractBaseSerializer(serializers.ModelSerializer):
         if value is None:
             if self.context["request"].user.email in ADMINS:
                 raise serializers.ValidationError(COUNTERPARTY_NOT_SELECTED)
-        # Если контракт создает не админ, а заказчик, то контрагентом будет он же
-        return self.context["request"].user.counterparty
-
+            # Если контракт создает не админ, а заказчик, то контрагентом будет он же
+            return self.context["request"].user.counterparty
+        return value
 
 class ContractDetailSerializer(ContractBaseSerializer):
     """
