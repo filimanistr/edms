@@ -1,5 +1,5 @@
-frontend
-env
+frontend/node_modules
+backend/env
 .git
 .vscode
 .idea

@@ -3,4 +3,4 @@
 env
 
 __pycache__
-contracts/migrations/
+backend/contracts/migrations/
