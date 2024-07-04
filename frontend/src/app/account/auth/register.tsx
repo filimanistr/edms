@@ -291,35 +291,37 @@ export default function Register({ toggleComponent } : any) {
   }
 
   return (
-    <Card className="mx-auto max-w-sm w-[328px]">
-      <CardHeader>
-        <CardTitle className="text-2xl">Регистрация</CardTitle>
-        <CardDescription>
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <Stage1 className={showPart ? "block" : "hidden"} form={form}/>
-            <Stage2 className={showPart ? "hidden" : "block"} form={form}/>
-            <div className="grid gap-2 mt-4 text-center text-sm">
-              <Button type="button" variant="outline" className="w-full" onClick={onNextClick}>
-                { showPart ? "Продолжить" : "Вернуться" }
-              </Button>
-            </div>
-            <div className="mt-4 text-center text-sm">
-              <div className="inline-block" onClick={toggleComponent}>
-                { /* Don&apos;t have an account?{" "} */}
-                <Link href="#" className="underline">
-                  Войти
-                </Link>
-              </div>
-            </div>
-          </form>
-        </Form>
+    <div>
+      <Card className="mx-auto max-w-sm w-[328px]">
+        <CardHeader>
+          <CardTitle className="text-2xl">Регистрация</CardTitle>
+          <CardDescription>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
 
-      </CardContent>
-    </Card>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <Stage1 className={showPart ? "block" : "hidden"} form={form}/>
+              <Stage2 className={showPart ? "hidden" : "block"} form={form}/>
+              <div className="grid gap-2 mt-4 text-center text-sm">
+                <Button type="button" variant="outline" className="w-full" onClick={onNextClick}>
+                  { showPart ? "Продолжить" : "Вернуться" }
+                </Button>
+              </div>
+              <div className="mt-4 text-center text-sm">
+                <div className="inline-block" onClick={toggleComponent}>
+                  { /* Don&apos;t have an account?{" "} */}
+                  <Link href="#" className="underline">
+                    Войти
+                  </Link>
+                </div>
+              </div>
+            </form>
+          </Form>
+
+        </CardContent>
+      </Card>
+    </div>
   )
 }
