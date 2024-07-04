@@ -4,7 +4,7 @@
 
 Документы созданные в системе, не являются юридически значимыми, для этого необходима интеграция с ПО оператора ЭДО или регистрация себя как оператора ЭДО для получения электронной подписи, которая дает юр. значимость. Поправьте меня если я не так понял этот момент, но так и пишут везде (мир победившей бюрократии ужс).
 
-## How to build
+## Как запустить
 
 Копируем проект себе на машину и переходим в папку
 
@@ -15,39 +15,39 @@ git clone --depth 1 https://github.com/filimanistr/edms/ && cd edms
 Собираем docker образы
 
 ```
-docker compose -f docker-compose.prod.yml build
+docker compose build
 ```
 
 Запускаем контейнеры
 ```
-docker compose -f docker-compose.prod.yml up -d
+docker compose up -d
 ```
 
 Запускаем миграции
 
 ```
-docker compose -f docker-compose.prod.yml exec server python manage.py migrate
+docker compose exec server python manage.py migrate
 ```
 
 Создаем в системе исполнителя на основе данных в .env/dev
 
 ```
-docker compose -f docker-compose.prod.yml exec server python manage.py initadmins
+docker compose exec server python manage.py initadmins
 ```
 
 go to [localhost:3000](http://localhost:3000/) под почтой `admin@gmail.com` и паролем `admin`
 
 Если деплоить это и дальше, то нужен веб сервер вне контейнера и базу с контейнера на отдельный сервер закинуть, тогда надо переписывать docker-compose.yml и не только. Сейчас оно здесь представлено в ознакомительном виде
 
-## How to clean
+## Как остановить
 
-Чтобы удалить все контейнеры, их образы и volumes, созданные командой выше
+Чтобы удалить все контейнеры, их образы и volumes, созданные командой выше выполните эту команду строго в этой же директории 
 
 ```
-docker compose -f docker-compose.prod.yml down -v --rmi local
+docker compose down -v --rmi local
 ```
 
-## TODO:
+## В планах
 
 1. History of changes
 2. Удалять все (кидать в архив), особые правила при удалении договоров: можно если обе стороны согласны
