@@ -1,143 +1,140 @@
-﻿from django.http import JsonResponse, HttpResponse
-from rest_framework.permissions import IsAuthenticated
+﻿from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework import generics
 from django.db import IntegrityError
 
+from . import models
 from .serializers import *
-from .models import Counterparty
 from .services import *
+from .config import *
 
 
-class Contract(APIView):
-    """Retrieve, update or delete a contract instance."""
+class ContractDetail(APIView):
+    """Retrieve or update a contract instance."""
+
+    def get(self, request, pk, format=None):
+        user = request.user
+        contract = Contract.objects.get(pk=pk)
+        if user.email not in ADMINS and contract.counterparty != user.counterparty:
+            return Response(CONTRACT_DOES_NOT_EXIST, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ContractDetailSerializer(contract)
+        return Response({
+            "is_admin": request.user.email in ADMINS,
+            **serializer.data,
+        })
+
+    def patch(self, request, pk, format=None):
+        contract = Contract.objects.get(pk=pk)
+        serializer = ContractDetailSerializer(contract,
+                                              data=request.data,
+                                              context={'request': request},
+                                              partial=True)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+            except Exception as e:
+                return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+            return Response()
+        return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
+
+
+class ContractList(APIView):
+    '''List all contracts, or create a new contract'''
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, contract_id):
-        r = get_contract(contract_id)
+    def get(self, request, format=None):
+        id = request.user.id
         if request.user.email in ADMINS:
-            r["role"] = "admin"
+            contracts = models.Contract.objects.all().order_by("pk")
         else:
-            r["role"] = "user"
+            contracts = models.Contract.objects.all().order_by("pk").filter(counterparty__pk=id)
+        serializer = ContractBaseSerializer(contracts, many=True)
+        return Response(serializer.data)
 
-        return Response(r)
-
-    def patch(self, request, contract_id):
-        """Варианта 2: обновление статуса клиентом
-                       обновление статуса сервером
-                       выбран последний"""
-        email = request.user.email
-
-        # Обновление контракта
-        if "contract" in request.data:
-            contract = request.data["contract"]
-            update_contract(email, contract_id, contract)
-
-        # Обновление статуса контракта
-        if "status" in request.data:
-            update_contract_status(email, contract_id)
-
-        return HttpResponse(status=200)
-
-
-class Contracts(APIView):
-    """List all contracts, or create a new contract"""
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        if request.user.email in ADMINS:
-            print("[log] get: contracts admin")
-            r = get_all_contracts()
-        else:
-            print("[log] get: contracts user")
-            user_id = request.user.id
-            r = get_user_contracts(user_id)
-        return JsonResponse(r, safe=False)
-
-    def post(self, request):
-        """Creates new contract, sets all the fields"""
-        email = request.user.email
-        c = request.data["counterparty"]
-        s = request.data["service"]
-        t = request.data["template"]
-        n = request.data["name"]
-
-        if email not in ADMINS:
-            c = request.user.id
-
-        contract = create_new_contract(user=email,
-                                       counterparty_id=c,
-                                       service_id=s,
-                                       template_id=t,
-                                       name=n)
-
-        if contract is None:
-            if email in ADMINS:
-                msg = "Договор с таким именем для этого контрагента уже существует"
-            else:
-                msg = "Договор с таким именем уже существует"
-            return Response({
-                "success": False,
-                "title": msg,
-                "description": "Измените название договора"
-                }, status=status.HTTP_409_CONFLICT)
-
-        return JsonResponse(contract, safe=False)
+    def post(self, request, format=None):
+        """
+        Creates new contract with counterparty
+        if counterparty isn't specified
+        contract will be created with admin
+        """
+        serializer = ContractDetailSerializer(data=request.data,
+                                              context={"request": request},
+                                              partial=True)
+        if serializer.is_valid():
+            instance = serializer.save()
+            if instance.created:
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            if request.user.email in ADMINS:
+                return Response(CONTRACT_EXIST_ADMIN, status=status.HTTP_409_CONFLICT)
+            return Response(CONTRACT_EXIST, status=status.HTTP_409_CONFLICT)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class Template(APIView):
-    """Retrieve, update or delete a template instance."""
+    """Retrieve or update a template instance."""
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, template_id):
-        r = dict()
-        r["is_admin"] = request.user.email in ADMINS
-        r["data"] = get_template(template_id, request.user.id)
-        return JsonResponse(r, safe=False)
+    def get(self, request, pk, format=None):
+        template = ContractTemplate.objects.get(pk=pk)
+        serializer = TemplateSerializer(template, context={'request': request})
+        return Response({
+            "is_admin": request.user.email in ADMINS,
+            "data": serializer.data
+        })
 
-    def patch(self, request, template_id):
-        update_template(template_id, request.data)
-        return HttpResponse(status=200)
+    def patch(self, request, pk, format=None):
+        template = ContractTemplate.objects.get(pk=pk)
+        serializer = TemplateSerializer(template,
+                                        data={"template": request.data},
+                                        context={'request': request},
+                                        partial=True)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+            except Exception as e:
+                return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+            return Response()
+        print(serializer.errors)
+        return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
 
 class Templates(APIView):
     """List all templates or create new template"""
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        r = dict()
-        r["is_admin"] = request.user.email in ADMINS
-        r["data"] = get_contract_templates()
-        return JsonResponse(r, safe=False)
+    def get(self, request, format=None):
+        templates = ContractTemplate.objects.all().order_by("pk")
+        serializer = TemplateBaseSerializer(templates, many=True)
+        return Response({
+            "is_admin": request.user.email in ADMINS,
+            "data": serializer.data
+        })
 
-    def post(self, request):
-        template = request.data['template']
-        service_id = request.data["service"]
-        name = request.data["name"]
-        template = create_new_template(name, service_id, template, request.user.id)
-
-        # TODO: Куда то бы вынести все эти сообщения в файл отдельный,
-        if template is None:
-            return Response({
-                "success": False,
-                "title": "Шаблон с таким именем уже существует для данной услуги",
-                "description": "Измените название шаблона или выберите другую услугу"
-                }, status=status.HTTP_409_CONFLICT)
-
-        return JsonResponse(template, safe=False)
+    def post(self, request, format=None):
+        serializer = TemplateSerializer(data=request.data, partial=True)
+        if serializer.is_valid():
+            instance = serializer.save(creator=request.user.counterparty)
+            if instance.created:
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(TEMPLATE_EXIST, status=status.HTTP_409_CONFLICT)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CounterpartiesView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        if request.user.email in ADMINS:
-            r = get_all_counterparties()
-            return JsonResponse(r, safe=False)
-        return HttpResponse(status=403)
+    def get(self, request, format=None):
+        if request.user.email not in ADMINS:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
-    def patch(self, request):        
+        data = Counterparty.objects.all().exclude(id__email__in=ADMINS).order_by("pk")
+        serializer = CounterpartySerializer(data, many=True)
+        return Response(serializer.data)
+
+    def patch(self, request, format=None):
         c = Counterparty.objects.get(pk=request.user.id)
         serializer = CounterpartySerializer(c, data=request.data, partial=True)
         if serializer.is_valid():
@@ -153,7 +150,7 @@ class CounterpartiesView(APIView):
 class CounterpartyView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    def get(self, request, format=None):
         c = Counterparty.objects.get(pk=request.user.id)
         serializer = CounterpartySerializer(c, context={"email": request.user.email})
         return Response(serializer.data)
@@ -162,100 +159,89 @@ class CounterpartyView(APIView):
 class Services(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        r = dict()
-        r["is_admin"] = request.user.email in ADMINS
-        r["data"] = get_services()
-        return JsonResponse(r, safe=False)
+    def get(self, request, format=None):
+        services = ServicesReference.objects.all().order_by("pk")
+        serializer = ServiceSerializer(services, many=True)
+        return Response({
+            "is_admin": request.user.email in ADMINS,
+            "data": serializer.data
+        })
 
-    def post(self, request):
+    def post(self, request, format=None):
         if request.user.email not in ADMINS:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        r = create_new_service(request.data["name"],
-                               request.data["price"],
-                               request.data["year"])
-
-        if r is None:
-            return Response({
-                "success": False,
-                "title": "Услуга с таким именем уже существует",
-                "description": "Измените название услуги на уникальное"
-                }, status=status.HTTP_409_CONFLICT)
-
-        return JsonResponse(r, safe=False)
+        serializer = ServiceSerializer(data=request.data)
+        if serializer.is_valid():
+            instance = serializer.save()
+            if instance.created:
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(SERVICE_EXIST, status=status.HTTP_409_CONFLICT)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ContractFields(APIView):
-    """Возвращает поля необходимые для создания контракта"""
+    """
+    Возвращает элементы из которых происходит выбор нужных для нового договора,
+    а это контрагенты, шаблоны и услуги. Заказчикам контрагенты не отсылаются.
+
+    За тем чтобы выбранный шаблон соответствовал услуге смотрит программа-клиент
+    """
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        r = dict()
-        r["is_admin"] = request.user.email in ADMINS
-        r["data"] = get_fields()
+    def get(self, request, format=None):
+        fields = get_fields()
         if request.user.email not in ADMINS:
-            r["data"]["counterparties"] = None
-        return JsonResponse(r, safe=False)
+            fields["counterparties"] = None
+
+        return Response({
+            "is_admin": request.user.email in ADMINS,
+            "data": fields,
+        })
 
 
 class ContractPreview(APIView):
-    """Creates contract's preview to review it
-    before actually saving it to database"""
+    """
+    Creates contract's preview to review it
+    before actually saving it to database
+
+    Returns contract and data that comes with it.
+    Also includes user data to insert it in editor into contract
+    So client don't need to request it again (saves time)
+    """
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        c = request.data["counterparty"]
-        s = request.data["service"]
-        t = request.data["template"]
-        n = request.data["name"]
-
-        # if user is not admin counterparty field would be empty,
-        # so we take current user id to create contract for him
-        email = request.user.email
-        if email not in ADMINS:
-            c = request.user.id
-
-        return Response(create_contract_preview(
-            counterparty_id=c,
-            service_id=s,
-            template_id=t,
-            name=n
-        ))
+    def post(self, request, format=None):
+        print(request.data)
+        serializer = ContractDetailSerializer(data=request.data,
+                                              context={"request": request},
+                                              partial=True)
+        if serializer.is_valid():
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ContractSave(APIView):
-    """Saves to db new contract without generating it based on a template
-    but should be specified anyway"""
+    """
+    Сохраняет в БД новый контракт без формирования его из шаблона,
+    тем не менее все так же должны быть переданы поля:
+
+    name: str
+    counterparty: id контрагента или null
+    template: id шаблона
+    contract: JSON
+    """
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        email = request.user.email
-        con = request.data["contract"]
-        c = request.data["counterparty"]
-        s = request.data["service"]
-        t = request.data["template"]
-        n = request.data["name"]
-
-        if email not in ADMINS:
-            c = request.user.id
-
-        contract = save_contract_preview(user=email,
-                                         contract=con,
-                                         counterparty_id=c,
-                                         service_id=s,
-                                         template_id=t,
-                                         name=n)
-
-        if contract is None:
-            if email in ADMINS:
-                msg = "Договор с таким именем для этого контрагента уже существует"
-            else:
-                msg = "Договор с таким именем уже существует"
-            return Response({
-                "success": False,
-                "title": msg,
-                "description": "Измените название договора"
-                }, status=status.HTTP_409_CONFLICT)
-        return JsonResponse(contract, safe=False)
-
+    def post(self, request, format=None):
+        serializer = ContractDetailSerializer(data=request.data,
+                                              context={"request": request},
+                                              partial=True)
+        if serializer.is_valid():
+            instance = serializer.save()
+            if instance.created:
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            if request.user.email in ADMINS:
+                return Response(CONTRACT_EXIST_ADMIN, status=status.HTTP_409_CONFLICT)
+            return Response(CONTRACT_EXIST, status=status.HTTP_409_CONFLICT)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

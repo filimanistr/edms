@@ -6,7 +6,6 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
-import {getContract} from "../contracts/api";
 import {DownloadButton, EditButton, HistoryButton, SendToAcceptanceButton, WatchButton} from "@/components/buttons";
 import {EditContractWindow} from "@/components/windows/edit-window";
 import {getService} from "@/app/services/api";

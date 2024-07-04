@@ -36,12 +36,9 @@ export function ContractActions({data, update}: any) {
       <div className="flex gap-2">
         <Button
           disabled={
-            (
-              (data.status === "ожидает согласования поставщиком" && data.role === "user") ||
-              (data.status === "ожидает согласования заказчиком" && data.role === "admin") ||
+              (!data.is_admin && data.status === "ожидает согласования поставщиком") ||
+              (data.is_admin && data.status === "ожидает согласования заказчиком") ||
               (data.status === "согласован")
-            )
-            && true
           }
           variant={readOnly ? "outline" : "default"}
           size="sm"
@@ -54,7 +51,8 @@ export function ContractActions({data, update}: any) {
         </Button>
 
         <HistoryButton/>
-        { data.role === "admin" && <DeleteButton/> }
+
+        { data.is_admin && <DeleteButton/> }
       </div>
 
       <div className="ml-auto flex gap-2">
@@ -67,17 +65,17 @@ export function ContractActions({data, update}: any) {
         }
 
         {(
-          (data.status === "ожидает согласования поставщиком" && data.role === "admin" && !show) ||
-          (data.status === "ожидает согласования заказчиком" && data.role === "user" && !show)
+          (data.status === "ожидает согласования поставщиком" && data.is_admin && !show) ||
+          (data.status === "ожидает согласования заказчиком" && !data.is_admin && !show)
           )
           && <AcceptButton page="/contracts" handle={handleUpdateStatus}/>
         }
 
-        {(data.status === "ожидает согласования поставщиком" && data.role === "admin" && show)
+        {(data.status === "ожидает согласования поставщиком" && data.is_admin && show)
           && <SendToAcceptanceButton page="/contracts" handle={handleUpdateContract}/>
         }
 
-        {(data.status === "ожидает согласования заказчиком" && data.role === "user" && show)
+        {(data.status === "ожидает согласования заказчиком" && !data.is_admin && show)
           && <SendToAcceptanceButton page="/contracts" handle={handleUpdateContract}/>
         }
 
