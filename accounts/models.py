@@ -12,8 +12,6 @@ class CustomManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None):
-        """Возможно стоит тут использовать только username,
-        но с почтой надежнее будет"""
         user = self.create_user(
             email,
             password=password,
@@ -40,18 +38,27 @@ class User(AbstractBaseUser):
         return self.email
 
     def has_perm(self, perm, obj=None):
-        """Returns True if the user has the named permission. If obj is provided,
-        the permission needs to be checked against a specific object instance"""
-        # TODO: Пока что особых разрешений нет, поэтому возвращает True
+        """
+        Returns True if the user has the named permission. If obj is provided,
+        the permission needs to be checked against a specific object instance
+
+        Пока что особых разрешений нет, поэтому возвращает True
+        """
         return True
 
     def has_module_perms(self, app_label):
-        """Returns True if the user has permission to access models in the given app"""
-        # TODO: То же в будущем должен быть пересмотрен
+        """
+        Returns True if the user has permission to access models in the given app
+
+        Пока что особых разрешений нет, поэтому возвращает True
+        """
         return True
 
     @property
     def is_staff(self):
-        "Is the user a member of staff?"
-        # TODO: Simplest possible answer: All admins are staff
+        """
+        Is the user a member of staff?
+
+        Simplest possible answer: All admins are staff
+        """
         return self.is_admin

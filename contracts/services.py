@@ -1,9 +1,8 @@
-﻿from django.utils import timezone
-from django.forms.models import model_to_dict
+﻿from django.forms.models import model_to_dict
 
 import xml.etree.ElementTree as ET
 
-from .models import Contract, ContractTemplate, Counterparty, ServicesReference
+from .models import ContractTemplate, Counterparty, ServicesReference
 from . import config
 
 # Тут описывается вся бизнес логика
@@ -13,15 +12,18 @@ tree = ET.parse("bic.xml")
 root = tree.getroot()
 
 
-def get_bank_info(id):
-    """По БИК возвращает название банка и корр/счет
+def get_bank_info(bic: str):
+    """
+    По БИК возвращает название банка и корр/счет
 
-    пока не понятно как часто надо обновлять инфу
+    пока не понятно как часто надо обновлять информацию
     и что будет если она не окажется достоверной,
+    
     TODO: надо либо обновлять каждый запрос сюда
           либо раз в месяц ок будет (не будет (хз))
-          дописать обновление инфы надо"""
-    data = root.find('{urn:cbr-ru:ed:v2.0}BICDirectoryEntry[@BIC="%s"]' % id)
+          дописать обновление информации надо
+    """
+    data = root.find('{urn:cbr-ru:ed:v2.0}BICDirectoryEntry[@BIC="%s"]' % bic)
     if data is None:
         return None
 
@@ -84,7 +86,7 @@ def update_status(status: str, is_admin: bool, changed: bool) -> str:
 
     :param status: Cтатус, который висит на контракте сейчас.
     :param is_admin: Является ли изменивший статус админом.
-    :param changed: Был ли договор изменен
+    :param changed: Был ли договор изменен или только обновлен статус до согласованного
     """
     if status == "ожидает согласования поставщиком":
         if changed: return "ожидает согласования заказчиком"
@@ -104,7 +106,6 @@ def get_fields() -> dict:
     Возвращает список всех контрагентов, шаблонов и услуг,
     необходимо на view слое отсекать counterparties из вывода этой функции для заказчиков
     """
-    # TODO: Обернуть в транзакцию
     counterparties = Counterparty.objects.exclude(id__email__in=config.ADMINS).values("id", "name")
     services = ServicesReference.objects.values("id", "name")
     templates = ContractTemplate.objects.values("id", "name", "service")
