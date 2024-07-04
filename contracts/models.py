@@ -98,7 +98,7 @@ class ContractTemplate(models.Model):
     class Meta:
         db_table = "ШаблонДоговора"
         verbose_name = 'Шаблон договора'
-        verbose_name_plural = 'Шаблоны догворов'
+        verbose_name_plural = 'Шаблоны договоров'
 
 
 class Contract(models.Model):
