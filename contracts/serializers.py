@@ -132,6 +132,7 @@ class ContractBaseSerializer(serializers.ModelSerializer):
             return self.context["request"].user.counterparty
         return value
 
+
 class ContractDetailSerializer(ContractBaseSerializer):
     """
     Информация о конкретном, одном договоре + новые данные

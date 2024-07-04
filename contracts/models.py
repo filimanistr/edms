@@ -47,7 +47,6 @@ class Counterparty(models.Model):
 
 
 class ClosingDocumentsReference(models.Model):
-    id = models.AutoField(primary_key=True)
     name = models.CharField("наименование", max_length=200, db_column="наименование")
     type = models.CharField("тип", max_length=40, db_column="тип")
     template = models.JSONField("шаблон", db_column="шаблон")
@@ -62,7 +61,6 @@ class ClosingDocumentsReference(models.Model):
 
 
 class ServicesReference(models.Model):
-    id = models.AutoField(primary_key=True)
     name = models.CharField("наименование услуги",
                             db_column="наименование_услуги",
                             max_length=300)
@@ -80,7 +78,6 @@ class ServicesReference(models.Model):
 
 
 class ContractTemplate(models.Model):
-    id = models.AutoField(primary_key=True)
     name = models.CharField("наименование", max_length=200, db_column="наименование")
     template = models.JSONField("шаблон", db_column="шаблон")
     creator = models.ForeignKey(Counterparty,
@@ -103,7 +100,6 @@ class ContractTemplate(models.Model):
 
 class Contract(models.Model):
     """Связывающая таблица Контрагента и Шаблонов договоров"""
-    id = models.AutoField(primary_key=True)
     name = models.CharField("наименование", max_length=200, db_column="наименование")
     counterparty = models.ForeignKey(Counterparty,
                                      on_delete=models.CASCADE,
@@ -126,10 +122,11 @@ class Contract(models.Model):
         verbose_name_plural = 'Договора'
 
 
-# Предполагает, что контрагент и шаблон не меняется
-# Регистрация изменений только самого договора
 class ContractsHistory(models.Model):
-    id = models.AutoField(primary_key=True)
+    """
+    Предполагает, что контрагент и шаблон не меняется
+    Регистрация изменений только самого договора
+    """
     contract_id = models.ForeignKey(Contract,
                                     on_delete=models.CASCADE,
                                     verbose_name="id договора",
@@ -145,7 +142,6 @@ class ContractsHistory(models.Model):
 
 
 class ClosingDocument(models.Model):
-    id = models.AutoField(primary_key=True)
     num = models.CharField("номер", max_length=20, db_column="номер")
     date = models.DateField("дата", db_column="дата")
     document = models.JSONField("документ", db_column="документ")
@@ -169,9 +165,7 @@ class ClosingDocument(models.Model):
 
 
 class Payments(models.Model):
-    """Таблица с информацией о поступлении оплаты"""
-    id = models.AutoField(primary_key=True)
-    # TODO: Тут должна быть ссылка как бы, мда
+    """TODO: Таблица с информацией о поступлении оплаты"""
     counterparty = models.TextField("учреждение", db_column="учреждение")
     reason = models.CharField("назначение платежа",
                               max_length=300,

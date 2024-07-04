@@ -143,7 +143,7 @@ class CounterpartiesView(APIView):
             except IntegrityError:
                 return Response({"message": "Данная почта уже занята"},
                                 status=status.HTTP_400_BAD_REQUEST)
-            return Response({"message": "Данные успешно изменены"}, status=200)
+            return Response({"message": "Данные успешно изменены"})
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
 
