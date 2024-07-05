@@ -2,7 +2,6 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from rest_framework import generics
 from django.db import IntegrityError
 
 from . import models
@@ -16,7 +15,7 @@ class ContractDetail(APIView):
 
     def get(self, request, pk, format=None):
         user = request.user
-        contract = Contract.objects.get(pk=pk)
+        contract = models.Contract.objects.get(pk=pk)
         if user.email not in ADMINS and contract.counterparty != user.counterparty:
             return Response(CONTRACT_DOES_NOT_EXIST, status=status.HTTP_400_BAD_REQUEST)
 
@@ -27,7 +26,7 @@ class ContractDetail(APIView):
         })
 
     def patch(self, request, pk, format=None):
-        contract = Contract.objects.get(pk=pk)
+        contract = models.Contract.objects.get(pk=pk)
         serializer = ContractDetailSerializer(contract,
                                               data=request.data,
                                               context={'request': request},
@@ -42,7 +41,7 @@ class ContractDetail(APIView):
 
 
 class ContractList(APIView):
-    '''List all contracts, or create a new contract'''
+    """List all contracts, or create a new contract"""
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
@@ -59,6 +58,13 @@ class ContractList(APIView):
         Creates new contract with counterparty
         if counterparty isn't specified
         contract will be created with admin
+
+        name: str
+        counterparty: id контрагента или null
+        template: id шаблона
+        contract: JSON | None
+
+        Если был передан контракт то сохраняется в БД без формирования
         """
         serializer = ContractDetailSerializer(data=request.data,
                                               context={"request": request},
@@ -97,7 +103,6 @@ class Template(APIView):
             except Exception as e:
                 return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
             return Response()
-        print(serializer.errors)
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
 
@@ -212,36 +217,9 @@ class ContractPreview(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, format=None):
-        print(request.data)
         serializer = ContractDetailSerializer(data=request.data,
                                               context={"request": request},
                                               partial=True)
         if serializer.is_valid():
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ContractSave(APIView):
-    """
-    Сохраняет в БД новый контракт без формирования его из шаблона,
-    тем не менее все так же должны быть переданы поля:
-
-    name: str
-    counterparty: id контрагента или null
-    template: id шаблона
-    contract: JSON
-    """
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, format=None):
-        serializer = ContractDetailSerializer(data=request.data,
-                                              context={"request": request},
-                                              partial=True)
-        if serializer.is_valid():
-            instance = serializer.save()
-            if instance.created:
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            if request.user.email in ADMINS:
-                return Response(CONTRACT_EXIST_ADMIN, status=status.HTTP_409_CONFLICT)
-            return Response(CONTRACT_EXIST, status=status.HTTP_409_CONFLICT)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

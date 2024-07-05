@@ -8,7 +8,9 @@ urlpatterns = [
     path('api/contracts/<int:pk>/', views.ContractDetail.as_view(), name='contract'),
     path('api/contracts/fields/', views.ContractFields.as_view(), name='contract_fields'),
     path('api/contracts/preview/', views.ContractPreview.as_view(), name='draft'),
-    path('api/contracts/save/', views.ContractSave.as_view(), name='save'),
+    path('api/contracts/save/',
+         views.ContractList.as_view(http_method_names=["post"]), name='save'
+    ),
 
     path('api/templates/', views.Templates.as_view(), name='templates'),
     path('api/templates/<int:pk>/', views.Template.as_view(), name='template'),
