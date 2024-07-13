@@ -1,7 +1,8 @@
-﻿from rest_framework.permissions import IsAuthenticated
+﻿from django.contrib.auth import aauthenticate
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status, generics
 from django.db import IntegrityError
 
 from . import models
@@ -15,7 +16,7 @@ class ContractDetail(APIView):
 
     def get(self, request, pk, format=None):
         user = request.user
-        contract = models.Contract.objects.get(pk=pk)
+        contract = models.Contract.objects.select_related("counterparty", "template", "template__service").get(pk=pk)
         if user.email not in ADMINS and contract.counterparty != user.counterparty:
             return Response(CONTRACT_DOES_NOT_EXIST, status=status.HTTP_400_BAD_REQUEST)
 
@@ -40,16 +41,23 @@ class ContractDetail(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
 
+'''
+class ContractList(generics.CreateAPIView):
+    queryset = models.Contract.objects.all().select_related("counterparty", "template").order_by("pk")
+    serializer_class = ContractDetailSerializer
+'''
+
+
 class ContractList(APIView):
     """List all contracts, or create a new contract"""
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        id = request.user.id
+        q = models.Contract.objects.all().select_related("counterparty", "template").order_by("pk")
         if request.user.email in ADMINS:
-            contracts = models.Contract.objects.all().order_by("pk")
+            contracts = q
         else:
-            contracts = models.Contract.objects.all().order_by("pk").filter(counterparty__pk=id)
+            contracts = q.filter(counterparty__pk=request.user.id)
         serializer = ContractBaseSerializer(contracts, many=True)
         return Response(serializer.data)
 
@@ -84,10 +92,11 @@ class Template(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk, format=None):
-        template = ContractTemplate.objects.get(pk=pk)
-        serializer = TemplateSerializer(template, context={'request': request})
+        user = request.user
+        template = ContractTemplate.objects.select_related("service", "creator", "creator__id").get(pk=pk)
+        serializer = TemplateSerializer(template, context={'user': user})
         return Response({
-            "is_admin": request.user.email in ADMINS,
+            "is_admin": user.email in ADMINS,
             "data": serializer.data
         })
 
@@ -111,7 +120,7 @@ class Templates(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        templates = ContractTemplate.objects.all().order_by("pk")
+        templates = ContractTemplate.objects.all().select_related("service").order_by("pk")
         serializer = TemplateBaseSerializer(templates, many=True)
         return Response({
             "is_admin": request.user.email in ADMINS,
@@ -132,16 +141,18 @@ class CounterpartiesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
+        # TODO: Тут можно сократить до 2 db hits
         if request.user.email not in ADMINS:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        data = Counterparty.objects.all().exclude(id__email__in=ADMINS).order_by("pk")
+        data = Counterparty.objects.select_related("id").all().exclude(id__email__in=ADMINS).order_by("pk")
         serializer = CounterpartySerializer(data, many=True)
         return Response(serializer.data)
 
     def patch(self, request, format=None):
-        c = Counterparty.objects.get(pk=request.user.id)
-        serializer = CounterpartySerializer(c, data=request.data, partial=True)
+        # TODO: Тут можно сократить до 3 db hits
+        counterparty = request.user.counterparty
+        serializer = CounterpartySerializer(counterparty, data=request.data, partial=True)
         if serializer.is_valid():
             try:
                 serializer.save()
@@ -156,8 +167,9 @@ class CounterpartyView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        c = Counterparty.objects.get(pk=request.user.id)
-        serializer = CounterpartySerializer(c, context={"email": request.user.email})
+        user = request.user
+        # TODO: Тут можно сократить до 2 db hits
+        serializer = CounterpartySerializer(user.counterparty, context={"email": user.email})
         return Response(serializer.data)
 
 

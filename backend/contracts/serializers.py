@@ -63,6 +63,63 @@ class CounterpartySerializer(serializers.ModelSerializer):
         return instance
 
 
+"""Templates"""
+
+
+class TemplateBaseSerializer(serializers.ModelSerializer):
+    service__name = serializers.CharField(source='service.name', read_only=True)
+
+    class Meta:
+        model = models.ContractTemplate
+        fields = [
+            "id",
+            "name",
+            "service__name",
+            "service"
+        ]
+
+        # эти поля не возвращаем, но читаем
+        extra_kwargs = {
+            'service': {'write_only': True},
+        }
+
+
+class TemplateSerializer(TemplateBaseSerializer):
+    """
+    Включает более подробную информацию о конкретном шаблоне
+    """
+    editable = serializers.SerializerMethodField()
+    service__id = serializers.IntegerField(source="service.id", read_only=True)
+
+    class Meta:
+        model = models.ContractTemplate
+        fields = TemplateBaseSerializer.Meta.fields + ["template", "editable", "service__id"]
+        extra_kwargs = TemplateBaseSerializer.Meta.extra_kwargs
+
+    def get_editable(self, obj):
+        user = self.context.get("user")
+        if user:
+            return user.id == obj.creator.id.id
+        return False
+
+    def create(self, validated_data):
+        instance, created = models.ContractTemplate.objects.get_or_create(
+            name=validated_data["name"],
+            service=validated_data["service"],
+            defaults={
+                "creator": validated_data["creator"],
+                "template": validated_data["template"]
+            }
+        )
+        instance.created = created
+        return instance
+
+    def update(self, instance, validated_data):
+        instance.template = validated_data["template"]
+        instance.save()
+        return instance
+
+
 """Contracts"""
 
 
@@ -79,6 +136,17 @@ class ContractBaseSerializer(serializers.ModelSerializer):
     От клиента принимает на вход поля: counterparty и template,
     возвращаются четыре поля что ниже:
     """
+    counterparty = serializers.PrimaryKeyRelatedField(
+        queryset=models.Counterparty.objects.all(),
+        write_only=True,
+        allow_null=True
+    )
+
+    template = serializers.PrimaryKeyRelatedField(
+        queryset=models.ContractTemplate.objects.select_related("service").all(),
+        write_only=True
+    )
+
     template__id = serializers.IntegerField(source='template.pk', read_only=True)
     template__name = serializers.CharField(source='template.name', read_only=True)
     counterparty__id = serializers.IntegerField(source='counterparty.pk', read_only=True)
@@ -110,14 +178,6 @@ class ContractBaseSerializer(serializers.ModelSerializer):
             "status",
             "year",
         ]
-        extra_kwargs = {
-            # in input only + name
-            "template": {"write_only": True},
-            "counterparty": {
-                "write_only": True,
-                "allow_null": True
-            },
-        }
 
     def validate(self, data):
         if self.context.get("request") is None:
@@ -163,6 +223,7 @@ class ContractDetailSerializer(ContractBaseSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._key_fields = None
+        self._contract = None
 
     def get_keys(self, obj):
         """Возвращает данные исполнителя и заказчика в поле keys"""
@@ -181,9 +242,14 @@ class ContractDetailSerializer(ContractBaseSerializer):
 
     def get_contract(self, obj):
         """Создает договор из шаблона, без сохранения его в базу данных"""
+        if self._contract is not None:
+            return self._contract
+
         if not isinstance(obj, models.Contract):
             obj = models.Contract(**obj)
-        return form_contract(obj.template.template, self.get_keys(obj))
+
+        self._contract = form_contract(obj.template.template, self.get_keys(obj))
+        return self._contract
 
     def create(self, validated_data):
         """
@@ -209,8 +275,6 @@ class ContractDetailSerializer(ContractBaseSerializer):
         instance.created = created
         if not created:
             return instance
-
-        instance.save()
         return instance
 
     def update(self, instance, validated_data):
@@ -225,64 +289,6 @@ class ContractDetailSerializer(ContractBaseSerializer):
 
         instance.status = update_status(instance.status, is_admin, changed)
         instance.contract = contract
-        instance.save()
-        return instance
-
-
-"""Templates"""
-
-
-class TemplateBaseSerializer(serializers.ModelSerializer):
-    service__name = serializers.CharField(source='service.name', read_only=True)
-
-    class Meta:
-        model = models.ContractTemplate
-        fields = [
-            "id",
-            "name",
-            "service__name",
-            "service"
-        ]
-
-        # эти поля не возвращаем, но читаем
-        extra_kwargs = {
-            'service': {'write_only': True},
-        }
-
-
-class TemplateSerializer(TemplateBaseSerializer):
-    """
-    Включает более подробную информацию о конкретном шаблоне
-    """
-    editable = serializers.SerializerMethodField()
-    service__id = serializers.IntegerField(source="service.id", read_only=True)
-
-    class Meta:
-        model = models.ContractTemplate
-        fields = TemplateBaseSerializer.Meta.fields + ["template", "editable", "service__id"]
-        extra_kwargs = TemplateBaseSerializer.Meta.extra_kwargs
-
-    def get_editable(self, obj):
-        request = self.context.get("request")
-        if request:
-            user_id = request.user.id
-            return user_id == obj.creator.id.id
-        return False
-
-    def create(self, validated_data):
-        instance, created = models.ContractTemplate.objects.get_or_create(
-            name=validated_data["name"],
-            service=validated_data["service"],
-            defaults={
-                "creator": validated_data["creator"],
-                "template": validated_data["template"]
-            }
-        )
-        instance.created = created
-        return instance
-
-    def update(self, instance, validated_data):
-        instance.template = validated_data["template"]
         instance.save()
         return instance
 
@@ -306,4 +312,3 @@ class ServiceSerializer(serializers.ModelSerializer):
         )
         instance.created = created
         return instance
-

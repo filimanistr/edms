@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from rest_framework.urlpatterns import format_suffix_patterns
+from debug_toolbar.toolbar import debug_toolbar_urls
 
 
 urlpatterns = [
@@ -26,5 +27,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]
 
+urlpatterns += debug_toolbar_urls()
 urlpatterns += staticfiles_urlpatterns()
 urlpatterns = format_suffix_patterns(urlpatterns)
