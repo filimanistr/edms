@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.utils import timezone
 
 from accounts.models import User
-from .config import ADMINS, COUNTERPARTY_NOT_SELECTED
+from .config import ADMINS, COUNTERPARTY_NOT_SELECTED, ContractStatuses
 from .services import get_key_fields, form_contract, get_bank_info, update_status
 from . import models
 
@@ -211,7 +211,7 @@ class ContractDetailSerializer(ContractBaseSerializer):
     Все в пределах одного запроса
     """
     keys = serializers.SerializerMethodField()
-    contract = serializers.SerializerMethodField()
+    status = serializers.EmailField(allow_null=True, allow_blank=True)
 
     class Meta(ContractBaseSerializer.Meta):
         fields = ContractBaseSerializer.Meta.fields + [
@@ -240,7 +240,7 @@ class ContractDetailSerializer(ContractBaseSerializer):
                                           admin_data)
         return self._key_fields
 
-    def get_contract(self, obj):
+    def _get_contract(self, obj):
         """Создает договор из шаблона, без сохранения его в базу данных"""
         if self._contract is not None:
             return self._contract
@@ -260,12 +260,18 @@ class ContractDetailSerializer(ContractBaseSerializer):
         else:
             status = "ожидает согласования заказчиком"
 
+        contract = validated_data.get("contract")
+        print("CONTRACT: ", contract)
+        if not contract:
+            print("CONTRACT: ", not contract)
+            contract = self._get_contract(validated_data)
+
         instance, created = models.Contract.objects.get_or_create(
             name=validated_data["name"],
             counterparty=validated_data["counterparty"],
             defaults={
                 "template": validated_data["template"],
-                "contract": self.get_contract(validated_data),
+                "contract": contract,
                 "year": timezone.now().year,
                 "status": status
             }
@@ -278,16 +284,16 @@ class ContractDetailSerializer(ContractBaseSerializer):
         return instance
 
     def update(self, instance, validated_data):
-        keys = validated_data.keys()
-        if "contract" not in keys and "status" not in keys:
-            # Изменение чего-либо кроме статуса и контракта не возможно
-            return instance
-
         is_admin = self.context["request"].user.email in ADMINS
         contract = validated_data.get("contract", instance.contract)
-        changed = contract is not instance["contract"]
+        changed = contract is not instance.contract
+        status = update_status(instance.status, is_admin, changed)
 
-        instance.status = update_status(instance.status, is_admin, changed)
+        keys = validated_data.keys()
+        if "contract" not in keys and "status" not in keys:
+            raise Exception("Изменение чего-либо кроме статуса и договора не возможно")
+
+        instance.status = status
         instance.contract = contract
         instance.save()
         return instance

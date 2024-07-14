@@ -18,7 +18,7 @@ def get_bank_info(bic: str):
 
     пока не понятно как часто надо обновлять информацию
     и что будет если она не окажется достоверной,
-    
+
     TODO: надо либо обновлять каждый запрос сюда
           либо раз в месяц ок будет (не будет (хз))
           дописать обновление информации надо
@@ -88,17 +88,18 @@ def update_status(status: str, is_admin: bool, changed: bool) -> str:
     :param is_admin: Является ли изменивший статус админом.
     :param changed: Был ли договор изменен или только обновлен статус до согласованного
     """
-    if status == "ожидает согласования поставщиком":
-        if changed: return "ожидает согласования заказчиком"
-        if is_admin: return "согласован"
-        raise Exception(config.CANT_ACCEPT_BY_USER)
-    elif status == "ожидает согласования заказчиком":
-        if changed: return "ожидает согласования поставщиком"
-        if not is_admin: return "согласован"
-        raise Exception(config.CANT_ACCEPT_BY_ADMIN)
-    elif status == "согласован":
+    if status == config.ContractStatuses.WAITING_ADMIN:
+        if not is_admin: raise Exception(config.CANT_EDIT_BY_USER)
+        if changed: return config.ContractStatuses.WAITING_USER
+        if is_admin: return config.ContractStatuses.ACCEPTED
+    elif status == config.ContractStatuses.WAITING_USER:
+        if is_admin: raise Exception(config.CANT_EDIT_BY_ADMIN)
+        if changed: return config.ContractStatuses.WAITING_ADMIN
+        if not is_admin: return config.ContractStatuses.ACCEPTED
+    elif status == config.ContractStatuses.ACCEPTED:
         if changed: Exception(config.CANT_EDIT_ACCEPTED_CONTRACT)
-        raise Exception(config.CANT_ACCEPT_ACCEPTED_CONTRACT)
+        raise Exception(config.CANT_EDIT_ACCEPTED_CONTRACT)
+    raise Exception("Unknown status")
 
 
 def get_fields() -> dict:
@@ -115,4 +116,3 @@ def get_fields() -> dict:
         "services": list(services),
         "templates": list(templates)
     }
-

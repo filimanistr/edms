@@ -37,18 +37,16 @@ CONTRACT_DOES_NOT_EXIST = {
 
 COUNTERPARTY_NOT_SELECTED = "Не был выбран заказчик с которым создается договор"
 
-CANT_EDIT_ACCEPTED_CONTRACT = "Нельзя изменять существующий контракт"
-
-CANT_ACCEPT_ACCEPTED_CONTRACT = "Нельзя согласовать согласованный договор"
-CANT_ACCEPT_BY_USER = "Вы не можете согласовать этот договор, ожидает согласование поставщиком"
-CANT_ACCEPT_BY_ADMIN = "Вы не можете согласовать этот договор, ожидает согласование заказчиком"
+CANT_EDIT_ACCEPTED_CONTRACT = "Вы не можете изменить согласованный договор"
+CANT_EDIT_BY_ADMIN = "Вы не можете изменить этот договор, ожидает согласование заказчиком"
+CANT_EDIT_BY_USER = "Вы не можете изменить этот договор, ожидает согласование поставщиком"
 
 # Глобальные переменные
 
 
 class ContractStatuses:
     WAITING_USER = "ожидает согласования заказчиком"
-    WAITING_ADMIN = "ожидает согласование поставщиком"
+    WAITING_ADMIN = "ожидает согласования поставщиком"
     ACCEPTED = "согласован"
 
 
@@ -79,4 +77,3 @@ COUNTERPARTY_KEY_FIELDS = {
     'расчетный счет': 'checking_account',
     'лицевой счет': 'personal_account'
 }
-
