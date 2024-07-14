@@ -18,7 +18,7 @@ class ContractDetail(APIView):
         user = request.user
         contract = models.Contract.objects.select_related("counterparty", "template", "template__service").get(pk=pk)
         if user.email not in ADMINS and contract.counterparty != user.counterparty:
-            return Response(CONTRACT_DOES_NOT_EXIST, status=status.HTTP_400_BAD_REQUEST)
+            return Response(CONTRACT_DOES_NOT_EXIST, status=status.HTTP_404_NOT_FOUND)
 
         serializer = ContractDetailSerializer(contract)
         return Response({
@@ -27,7 +27,11 @@ class ContractDetail(APIView):
         })
 
     def patch(self, request, pk, format=None):
+        user = request.user
         contract = models.Contract.objects.get(pk=pk)
+        if user.email not in ADMINS and contract.counterparty != user.counterparty:
+            return Response(CONTRACT_DOES_NOT_EXIST, status=status.HTTP_404_NOT_FOUND)
+
         serializer = ContractDetailSerializer(contract,
                                               data=request.data,
                                               context={'request': request},
