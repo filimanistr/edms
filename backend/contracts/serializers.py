@@ -3,9 +3,9 @@ from rest_framework.exceptions import APIException
 from django.utils import timezone
 
 from accounts.models import User
-from .config import ADMINS, COUNTERPARTY_NOT_SELECTED, ContractStatuses, TEMPLATE_EXIST
+from .config import ADMINS, COUNTERPARTY_NOT_SELECTED, ContractStatuses, TEMPLATE_EXIST, CANT_EDIT_GENERAL_TEMPLATE
 from .services import get_key_fields, form_contract, get_bank_info, update_status
-from .exceptions import AlreadyExists
+from .exceptions import AlreadyExistsException, ForbiddenToEditException
 from . import models
 
 
@@ -114,11 +114,16 @@ class TemplateSerializer(TemplateBaseSerializer):
             }
         )
         if not created:
-            raise AlreadyExists(TEMPLATE_EXIST)
+            raise AlreadyExistsException(TEMPLATE_EXIST)
         return instance
 
     def update(self, instance, validated_data):
-        instance.template = validated_data["template"]
+        # Найти бы место по лучше для этой проверки
+        user = self.context["request"].user
+        if user.email not in ADMINS and instance.creator.id.email in ADMINS:
+            raise ForbiddenToEditException(CANT_EDIT_GENERAL_TEMPLATE)
+
+        instance.template = validated_data.get("template", instance.template)
         instance.save()
         return instance
 

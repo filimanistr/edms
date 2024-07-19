@@ -92,37 +92,19 @@ class ContractList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class Template(APIView):
-    """Retrieve or update a template instance."""
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, pk, format=None):
-        user = request.user
-        template = ContractTemplate.objects.select_related("service", "creator", "creator__id").get(pk=pk)
-        serializer = TemplateSerializer(template, context={'user': user})
-        return Response({
-            "is_admin": user.email in ADMINS,
-            "data": serializer.data
-        })
-
-    def patch(self, request, pk, format=None):
-        template = ContractTemplate.objects.get(pk=pk)
-        serializer = TemplateSerializer(template,
-                                        data={"template": request.data},
-                                        context={'request': request},
-                                        partial=True)
-        if serializer.is_valid():
-            try:
-                serializer.save()
-            except Exception as e:
-                return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
-            return Response()
-        return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
-
-
 class TemplateDetail(generics.RetrieveUpdateAPIView):
     queryset = ContractTemplate.objects.select_related("service", "creator", "creator__id").all()
+    serializer_class = TemplateSerializer
+    filter_backends = [filters.templatesFilter]
     permission_classes = [IsAuthenticated]
+
+    def retrieve(self, request, *args, **kwargs):
+        response = super().retrieve(request, args, kwargs)
+        response.data = {
+            "is_admin": request.user.email in ADMINS,
+            "data": response.data
+        }
+        return response
 
 
 class TemplateList(generics.ListCreateAPIView):
