@@ -73,22 +73,22 @@ def create_test_contracts(admin: models.Counterparty, user: models.Counterparty)
 
 class ContractListViewTests(APITestCase):
 
-    def setUp(self):
-        self.admin = create_test_admin()
-        self.user = create_test_user("user1@test.com")
-        self.another_user = create_test_user("user2@test.com")
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin = create_test_admin()
+        cls.user = create_test_user("user1@test.com")
+        cls.another_user = create_test_user("user2@test.com")
+        cls.user_contract = create_test_contracts(cls.admin, cls.user)
+        cls.another_user_contract = create_test_contracts(cls.admin, cls.another_user)
 
     def test_only_user_contracts_shown(self):
         """
         Для заказчика отображаются только его договора
         """
-        user_contract = create_test_contracts(self.admin, self.user)
-        create_test_contracts(self.admin, self.another_user)
-
         self.client.force_authenticate(user=self.user)
         response = self.client.get("/api/contracts/")
         response_contracts_ids = [i["id"] for i in response.data]
-        user_contracts_ids = [i.pk for i in [user_contract]]
+        user_contracts_ids = [i.pk for i in [self.user_contract]]
 
         self.assertEqual(response.status_code, 200)
         self.assertQuerySetEqual(response_contracts_ids, user_contracts_ids)
@@ -97,10 +97,7 @@ class ContractListViewTests(APITestCase):
         """
         Для исполнителя отображаются все договора
         """
-        user_contract = create_test_contracts(self.admin, self.user)
-        another_user_contract = create_test_contracts(self.admin, self.another_user)
-        all_contracts = [user_contract, another_user_contract]
-
+        all_contracts = [self.user_contract, self.another_user_contract]
         self.client.force_authenticate(user=self.admin)
         response = self.client.get("/api/contracts/")
         response_contracts_ids = [i["id"] for i in response.data]
@@ -128,18 +125,19 @@ class ContractListViewTests(APITestCase):
 
 class ContractDetailViewTest(APITestCase):
 
-    def setUp(self):
-        self.admin = create_test_admin()
-        self.user = create_test_user("user1@test.com")
-        self.another_user = create_test_user("user2@test.com")
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin = create_test_admin()
+        cls.user = create_test_user("user1@test.com")
+        cls.another_user = create_test_user("user2@test.com")
+        cls.user_contract = create_test_contracts(cls.admin, cls.user)
+        cls.another_user_contract = create_test_contracts(cls.admin, cls.another_user)
 
     def test_cannot_access_not_his_contract(self):
         """
         Заказчик не может получить доступ к договору не принадлежащему ему и изменять его
         """
-        another_user_contract = create_test_contracts(self.admin, self.another_user)
-        contract_id = another_user_contract.pk
-
+        contract_id = self.another_user_contract.pk
         self.client.force_authenticate(user=self.user)
         response = self.client.get(f"/api/contracts/{contract_id}/")
         patch_response = self.client.patch(f"/api/contracts/{contract_id}/")
@@ -152,48 +150,44 @@ class ContractDetailViewTest(APITestCase):
         """
         Заказчик не может менять договор если он в ожидании согласования поставщиком
         """
-        user_contract = create_test_contracts(self.admin, self.user)
-        user_contract.status = ContractStatuses.WAITING_ADMIN
-        user_contract.save()
+        self.user_contract.status = ContractStatuses.WAITING_ADMIN
+        self.user_contract.save()
 
         self.client.force_authenticate(user=self.user)
-        response = self.client.patch(f"/api/contracts/{user_contract.pk}/")
+        response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_admin_cannot_edit_contract_if_awaiting_user(self):
         """
         Поставщик не может менять договор если он в ожидании согласования заказчиком
         """
-        user_contract = create_test_contracts(self.admin, self.user)
-        user_contract.status = ContractStatuses.WAITING_USER
-        user_contract.save()
+        self.user_contract.status = ContractStatuses.WAITING_USER
+        self.user_contract.save()
 
         self.client.force_authenticate(user=self.admin)
-        response = self.client.patch(f"/api/contracts/{user_contract.pk}/")
+        response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_user_cannot_edit_contract_if_approved(self):
         """
         Заказчик не может менять договор если он согласован
         """
-        user_contract = create_test_contracts(self.admin, self.user)
-        user_contract.status = ContractStatuses.ACCEPTED
-        user_contract.save()
+        self.user_contract.status = ContractStatuses.ACCEPTED
+        self.user_contract.save()
 
         self.client.force_authenticate(user=self.admin)
-        response = self.client.patch(f"/api/contracts/{user_contract.pk}/")
+        response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_admin_cannot_edit_contract_if_approved(self):
         """
         Поставщик не может менять договор если он согласован
         """
-        user_contract = create_test_contracts(self.admin, self.user)
-        user_contract.status = ContractStatuses.ACCEPTED
-        user_contract.save()
+        self.user_contract.status = ContractStatuses.ACCEPTED
+        self.user_contract.save()
 
         self.client.force_authenticate(user=self.admin)
-        response = self.client.patch(f"/api/contracts/{user_contract.pk}/")
+        response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     """Проверка на то что изменения договра коснулись"""
@@ -202,13 +196,12 @@ class ContractDetailViewTest(APITestCase):
         """
         Заказчик может согласовать договор
         """
-        user_contract = create_test_contracts(self.admin, self.user)
-        user_contract.status = ContractStatuses.WAITING_USER
-        user_contract.save()
+        self.user_contract.status = ContractStatuses.WAITING_USER
+        self.user_contract.save()
 
         self.client.force_authenticate(user=self.user)
-        response = self.client.patch(f"/api/contracts/{user_contract.pk}/", {"status":""})
-        new_status = models.Contract.objects.get(pk=user_contract.pk).status
+        response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/", {"status":""})
+        new_status = models.Contract.objects.get(pk=self.user_contract.pk).status
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(new_status, ContractStatuses.ACCEPTED)
@@ -217,13 +210,12 @@ class ContractDetailViewTest(APITestCase):
         """
         Заказчик может вносить правки в договор
         """
-        user_contract = create_test_contracts(self.admin, self.user)
-        user_contract.status = ContractStatuses.WAITING_USER
-        user_contract.save()
+        self.user_contract.status = ContractStatuses.WAITING_USER
+        self.user_contract.save()
 
         self.client.force_authenticate(user=self.user)
-        response = self.client.patch(f"/api/contracts/{user_contract.pk}/", {"contract":"{}"})
-        new_contract = models.Contract.objects.get(pk=user_contract.pk)
+        response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/", {"contract":"{}"})
+        new_contract = models.Contract.objects.get(pk=self.user_contract.pk)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(new_contract.status, ContractStatuses.WAITING_ADMIN)
@@ -233,13 +225,12 @@ class ContractDetailViewTest(APITestCase):
         """
         Поставщик может согласовать договор
         """
-        user_contract = create_test_contracts(self.admin, self.user)
-        user_contract.status = ContractStatuses.WAITING_ADMIN
-        user_contract.save()
+        self.user_contract.status = ContractStatuses.WAITING_ADMIN
+        self.user_contract.save()
 
         self.client.force_authenticate(user=self.admin)
-        response = self.client.patch(f"/api/contracts/{user_contract.pk}/", {"status":""})
-        new_status = models.Contract.objects.get(pk=user_contract.pk).status
+        response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/", {"status":""})
+        new_status = models.Contract.objects.get(pk=self.user_contract.pk).status
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(new_status, ContractStatuses.ACCEPTED)
@@ -248,13 +239,12 @@ class ContractDetailViewTest(APITestCase):
         """
         Поставщик может вносить правки в договор
         """
-        user_contract = create_test_contracts(self.admin, self.user)
-        user_contract.status = ContractStatuses.WAITING_ADMIN
-        user_contract.save()
+        self.user_contract.status = ContractStatuses.WAITING_ADMIN
+        self.user_contract.save()
 
         self.client.force_authenticate(user=self.admin)
-        response = self.client.patch(f"/api/contracts/{user_contract.pk}/", {"contract":"{}"})
-        new_contract = models.Contract.objects.get(pk=user_contract.pk)
+        response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/", {"contract":"{}"})
+        new_contract = models.Contract.objects.get(pk=self.user_contract.pk)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(new_contract.status, ContractStatuses.WAITING_USER)
@@ -267,13 +257,12 @@ class ContractDetailViewTest(APITestCase):
         От передачи и status и contract в payload к patch методу обновляется только контракт
         поведение то же что если бы и status вовсе не пересылался
         """
-        user_contract = create_test_contracts(self.admin, self.user)
-        user_contract.status = ContractStatuses.WAITING_ADMIN
-        user_contract.save()
+        self.user_contract.status = ContractStatuses.WAITING_ADMIN
+        self.user_contract.save()
 
         self.client.force_authenticate(user=self.admin)
-        response = self.client.patch(f"/api/contracts/{user_contract.pk}/", {"contract":"{}", "status":""})
-        new_contract = models.Contract.objects.get(pk=user_contract.pk)
+        response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/", {"contract":"{}", "status":""})
+        new_contract = models.Contract.objects.get(pk=self.user_contract.pk)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(new_contract.status, ContractStatuses.WAITING_USER)
@@ -281,13 +270,12 @@ class ContractDetailViewTest(APITestCase):
 
         # Для заказчика то же самое
 
-        user_contract = create_test_contracts(self.admin, self.user)
-        user_contract.status = ContractStatuses.WAITING_USER
-        user_contract.save()
+        self.user_contract.status = ContractStatuses.WAITING_USER
+        self.user_contract.save()
 
         self.client.force_authenticate(user=self.user)
-        response = self.client.patch(f"/api/contracts/{user_contract.pk}/", {"contract":"{}", "status":""})
-        new_contract = models.Contract.objects.get(pk=user_contract.pk)
+        response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/", {"contract":"{}", "status":""})
+        new_contract = models.Contract.objects.get(pk=self.user_contract.pk)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(new_contract.status, ContractStatuses.WAITING_ADMIN)
