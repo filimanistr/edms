@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework import status, generics
 from django.db import IntegrityError
 
+from . import filters
 from . import models
 from .serializers import *
 from .services import *
@@ -45,11 +46,11 @@ class ContractDetail(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
 
-'''
-class ContractList(generics.CreateAPIView):
-    queryset = models.Contract.objects.all().select_related("counterparty", "template").order_by("pk")
+class ContractListV2(generics.ListCreateAPIView):
+    queryset = models.Contract.objects.all().select_related("counterparty", "template")
     serializer_class = ContractDetailSerializer
-'''
+    filter_backends = [filters.contractsFilter]
+    ordering = ["pk"]
 
 
 class ContractList(APIView):
@@ -119,26 +120,26 @@ class Template(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
 
-class Templates(APIView):
-    """List all templates or create new template"""
+class TemplateDetail(generics.RetrieveUpdateAPIView):
+    queryset = ContractTemplate.objects.select_related("service", "creator", "creator__id").all()
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, format=None):
-        templates = ContractTemplate.objects.all().select_related("service").order_by("pk")
-        serializer = TemplateBaseSerializer(templates, many=True)
-        return Response({
-            "is_admin": request.user.email in ADMINS,
-            "data": serializer.data
-        })
 
-    def post(self, request, format=None):
-        serializer = TemplateSerializer(data=request.data, partial=True)
-        if serializer.is_valid():
-            instance = serializer.save(creator=request.user.counterparty)
-            if instance.created:
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(TEMPLATE_EXIST, status=status.HTTP_409_CONFLICT)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class TemplateList(generics.ListCreateAPIView):
+    queryset = ContractTemplate.objects.all().select_related("service").order_by("pk")
+    filter_backends = [filters.templatesFilter]
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return TemplateSerializer
+        return TemplateBaseSerializer
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, args, kwargs)
+        response.data["is_admin"] = request.user.email in ADMINS
+        response.data["data"] = response.data.pop("results")
+        return response
 
 
 class CounterpartiesView(APIView):

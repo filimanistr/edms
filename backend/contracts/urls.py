@@ -12,7 +12,9 @@ urlpatterns = [
          views.ContractList.as_view(http_method_names=["post"]), name='save'
     ),
 
-    path('api/templates/', views.Templates.as_view(), name='templates'),
+    path('api/v2/templates/<int:pk>/', views.TemplateDetail.as_view(), name='template2'),
+
+    path('api/templates/', views.TemplateList.as_view(), name='templates'),
     path('api/templates/<int:pk>/', views.Template.as_view(), name='template'),
 
     path('api/counterparties/', views.CounterpartiesView.as_view(), name='counterparties'),

@@ -1,9 +1,11 @@
 from rest_framework import serializers
+from rest_framework.exceptions import APIException
 from django.utils import timezone
 
 from accounts.models import User
-from .config import ADMINS, COUNTERPARTY_NOT_SELECTED, ContractStatuses
+from .config import ADMINS, COUNTERPARTY_NOT_SELECTED, ContractStatuses, TEMPLATE_EXIST
 from .services import get_key_fields, form_contract, get_bank_info, update_status
+from .exceptions import AlreadyExists
 from . import models
 
 
@@ -97,9 +99,9 @@ class TemplateSerializer(TemplateBaseSerializer):
         extra_kwargs = TemplateBaseSerializer.Meta.extra_kwargs
 
     def get_editable(self, obj):
-        user = self.context.get("user")
+        user = self.context.get("request")
         if user:
-            return user.id == obj.creator.id.id
+            return user.user.id == obj.creator.id.id
         return False
 
     def create(self, validated_data):
@@ -107,11 +109,12 @@ class TemplateSerializer(TemplateBaseSerializer):
             name=validated_data["name"],
             service=validated_data["service"],
             defaults={
-                "creator": validated_data["creator"],
+                "creator": self.context.get("request").user.counterparty,
                 "template": validated_data["template"]
             }
         )
-        instance.created = created
+        if not created:
+            raise AlreadyExists(TEMPLATE_EXIST)
         return instance
 
     def update(self, instance, validated_data):
