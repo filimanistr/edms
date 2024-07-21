@@ -1,15 +1,17 @@
 from rest_framework.test import APITestCase
+from rest_framework import status
 
-from .tests import *
+from accounts.models import User
 
 
 class ServicesViewTests(APITestCase):
+    fixtures = ["users.json"]
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = create_test_admin()
-        cls.user = create_test_user("user1@test.com")
-        cls.another_user = create_test_user("user2@test.com")
+        cls.admin = User.objects.get(is_admin=True)
+        cls.user = User.objects.get(email="user1@test.com")
+        cls.another_user = User.objects.get(email="user2@test.com")
 
     def test_user_cant_create_service(self):
         """

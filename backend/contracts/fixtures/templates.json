@@ -1,0 +1,74 @@
+[
+  {
+    "model": "contracts.servicesreference",
+    "pk": 1,
+    "fields": {
+      "name": "test service",
+      "price": "15.00",
+      "year": 2024
+    }
+  },
+  {
+    "model": "contracts.contracttemplate",
+    "pk": 1,
+    "fields": {
+      "name": "general template",
+      "template": [
+        {
+          "type": "p",
+          "children": [
+            {
+              "text": "user contract",
+              "fontSize": 14,
+              "fontFamily": "Times New Roman"
+            }
+          ]
+        }
+      ],
+      "creator": 1,
+      "service": 1
+    }
+  },
+  {
+    "model": "contracts.contracttemplate",
+    "pk": 2,
+    "fields": {
+      "name": "user template",
+      "template": [
+        {
+          "type": "p",
+          "children": [
+            {
+              "text": "user contract",
+              "fontSize": 14,
+              "fontFamily": "Times New Roman"
+            }
+          ]
+        }
+      ],
+      "creator": 2,
+      "service": 1
+    }
+  },
+  {
+    "model": "contracts.contracttemplate",
+    "pk": 3,
+    "fields": {
+      "name": "another user template",
+      "template": [
+        {
+          "type": "p",
+          "children": [
+            {
+              "text": "user contract",
+              "fontSize": 14,
+              "fontFamily": "Times New Roman"
+            }
+          ]
+        }
+      ],
+      "creator": 3,
+      "service": 1
+    }
+  }
+]

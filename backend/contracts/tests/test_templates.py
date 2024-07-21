@@ -4,25 +4,25 @@ from rest_framework.authtoken.models import Token
 from rest_framework import status
 
 from accounts.models import User
+from contracts.models import ServicesReference, ContractTemplate
 from contracts import models, views
 from contracts.config import ContractStatuses
 
-from .tests import *
-
 
 class BaseContractTests(APITestCase):
+    fixtures = ["users.json", "counterparties.json", "templates.json"]
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = create_test_admin()
-        cls.user = create_test_user("user1@test.com")
-        cls.another_user = create_test_user("user2@test.com")
+        cls.admin = User.objects.get(is_admin=True)
+        cls.user = User.objects.get(email="user1@test.com")
+        cls.another_user = User.objects.get(email="user2@test.com")
 
-        cls.service = create_test_service()
+        cls.service = ServicesReference.objects.get(pk=1)
 
-        cls.general_template = create_test_template(cls.admin, cls.service)
-        cls.user_template = create_test_template(cls.user, cls.service)
-        cls.another_user_template = create_test_template(cls.another_user, cls.service)
+        cls.general_template = ContractTemplate.objects.get(pk=1)
+        cls.user_template = ContractTemplate.objects.get(pk=2)
+        cls.another_user_template = ContractTemplate.objects.get(pk=3)
 
 
 class TemplateDetailViewTests(BaseContractTests):

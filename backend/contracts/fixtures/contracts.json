@@ -1,0 +1,78 @@
+[
+  {
+    "model": "contracts.servicesreference",
+    "pk": 1,
+    "fields": {
+      "name": "test service",
+      "price": "15.00",
+      "year": 2024
+    }
+  },
+  {
+    "model": "contracts.contracttemplate",
+    "pk": 1,
+    "fields": {
+      "name": "123",
+      "template": [
+        {
+          "type": "p",
+          "children": [
+            {
+              "text": "user contract",
+              "fontSize": 14,
+              "fontFamily": "Times New Roman"
+            }
+          ]
+        }
+      ],
+      "creator": 1,
+      "service": 1
+    }
+  },
+  {
+    "model": "contracts.contract",
+    "pk": 1,
+    "fields": {
+      "name": "user contract",
+      "counterparty": 2,
+      "template": 1,
+      "contract": [
+        {
+          "type": "p",
+          "children": [
+            {
+              "text": "another user contract",
+              "fontSize": 14,
+              "fontFamily": "Times New Roman"
+            }
+          ]
+        }
+      ],
+      "year": 2024,
+      "status": "ожидает согласования поставщиком"
+    }
+  },
+  {
+    "model": "contracts.contract",
+    "pk": 2,
+    "fields": {
+      "name": "another user contract",
+      "counterparty": 3,
+      "template": 1,
+      "contract": [
+        {
+          "type": "p",
+          "children": [
+            {
+              "text": "another user contract",
+              "fontSize": 14,
+              "fontFamily": "Times New Roman"
+            }
+          ]
+        }
+      ],
+      "year": 2024,
+      "status": "ожидает согласования поставщиком"
+    }
+  }
+]

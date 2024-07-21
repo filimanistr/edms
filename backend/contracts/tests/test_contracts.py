@@ -4,22 +4,25 @@ from rest_framework.authtoken.models import Token
 from rest_framework import status
 
 from accounts.models import User
+from contracts.models import Contract, ServicesReference, ContractTemplate
+
 from contracts import models, views
 from contracts.config import ContractStatuses
 
-from .tests import *
-
 
 class BaseContractTests(APITestCase):
+    fixtures = ["users.json", "counterparties.json", "contracts"]
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = create_test_admin()
-        cls.user = create_test_user("user1@test.com")
-        cls.another_user = create_test_user("user2@test.com")
+        cls.admin = User.objects.get(is_admin=True)
+        cls.user = User.objects.get(email="user1@test.com")
+        cls.another_user = User.objects.get(email="user2@test.com")
 
-        cls.user_contract = create_test_contracts(cls.admin, cls.user)
-        cls.another_user_contract = create_test_contracts(cls.admin, cls.another_user)
+        cls.service = ServicesReference.objects.get(pk=1)
+        cls.general_template = ContractTemplate.objects.get(pk=1)
+        cls.user_contract = Contract.objects.get(counterparty=cls.user.counterparty)
+        cls.another_user_contract = Contract.objects.get(counterparty=cls.another_user.counterparty)
 
 
 class ContractListViewTests(BaseContractTests):
@@ -53,8 +56,8 @@ class ContractListViewTests(BaseContractTests):
         """
         Заказчик может создавать договора только с исполнителем
         """
-        service = create_test_service()
-        template = create_test_template(self.admin, service)
+        service = self.service
+        template = self.general_template
 
         self.client.force_authenticate(user=self.user)
         response = self.client.post("/api/contracts/", {

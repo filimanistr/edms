@@ -1,0 +1,68 @@
+[
+  {
+    "model": "contracts.counterparty",
+    "pk": 1,
+    "fields": {
+      "name": "test",
+      "full_name": "test",
+      "INN": "test",
+      "KPP": "test",
+      "bank_name": "test",
+      "BIC": "test",
+      "correspondent_account": "test",
+      "checking_account": "test",
+      "personal_account": "test",
+      "head_first_name": "test",
+      "head_last_name": "test",
+      "head_middle_name": "test",
+      "head_pos_first_name": "test",
+      "head_pos_last_name": "test",
+      "head_pos_middle_name": "test",
+      "reason": "test"
+    }
+  },
+  {
+    "model": "contracts.counterparty",
+    "pk": 2,
+    "fields": {
+      "name": "test",
+      "full_name": "test",
+      "INN": "test",
+      "KPP": "test",
+      "bank_name": "test",
+      "BIC": "test",
+      "correspondent_account": "test",
+      "checking_account": "test",
+      "personal_account": "test",
+      "head_first_name": "test",
+      "head_last_name": "test",
+      "head_middle_name": "test",
+      "head_pos_first_name": "test",
+      "head_pos_last_name": "test",
+      "head_pos_middle_name": "test",
+      "reason": "test"
+    }
+  },
+  {
+    "model": "contracts.counterparty",
+    "pk": 3,
+    "fields": {
+      "name": "test",
+      "full_name": "test",
+      "INN": "test",
+      "KPP": "test",
+      "bank_name": "test",
+      "BIC": "test",
+      "correspondent_account": "test",
+      "checking_account": "test",
+      "personal_account": "test",
+      "head_first_name": "test",
+      "head_last_name": "test",
+      "head_middle_name": "test",
+      "head_pos_first_name": "test",
+      "head_pos_last_name": "test",
+      "head_pos_middle_name": "test",
+      "reason": "test"
+    }
+  }
+]
