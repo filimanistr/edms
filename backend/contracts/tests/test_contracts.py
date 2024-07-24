@@ -2,6 +2,7 @@ from rest_framework.test import APITestCase
 from rest_framework.test import force_authenticate, APIRequestFactory
 from rest_framework.authtoken.models import Token
 from rest_framework import status
+import json
 
 from accounts.models import User
 from contracts.models import Contract, ServicesReference, ContractTemplate
@@ -33,6 +34,7 @@ class ContractListViewTests(BaseContractTests):
         """
         self.client.force_authenticate(user=self.user)
         response = self.client.get("/api/contracts/")
+        # response_contracts_ids = [i["id"] for i in response.data["results"]]
         response_contracts_ids = [i["id"] for i in response.data]
         user_contracts_ids = [i.pk for i in [self.user_contract]]
 
@@ -46,6 +48,7 @@ class ContractListViewTests(BaseContractTests):
         all_contracts = [self.user_contract, self.another_user_contract]
         self.client.force_authenticate(user=self.admin)
         response = self.client.get("/api/contracts/")
+        # response_contracts_ids = [i["id"] for i in response.data["results"]]
         response_contracts_ids = [i["id"] for i in response.data]
         all_contracts_ids = [i.pk for i in all_contracts]
 
@@ -69,7 +72,10 @@ class ContractListViewTests(BaseContractTests):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
-class ContractDetailViewTest(BaseContractTests):
+class ContractDetailAccessViewTest(BaseContractTests):
+    """
+    Checks whether the contract can be accesssed and updated by users
+    """
 
     def test_cannot_access_not_his_contract(self):
         """
@@ -81,8 +87,6 @@ class ContractDetailViewTest(BaseContractTests):
         patch_response = self.client.patch(f"/api/contracts/{contract_id}/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(patch_response.status_code, status.HTTP_404_NOT_FOUND)
-
-    """Проверка на доступ к изменению договора"""
 
     def test_user_cannot_edit_contract_if_awaiting_admin(self):
         """
@@ -128,7 +132,11 @@ class ContractDetailViewTest(BaseContractTests):
         response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    """Проверка на то что изменения договра коснулись"""
+
+class ContractDetailUpdateViewTest(BaseContractTests):
+    """
+    Checks whether contracts are being updated
+    """
 
     def test_user_can_change_status(self):
         """
@@ -141,7 +149,7 @@ class ContractDetailViewTest(BaseContractTests):
         response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/", {"status":""})
         new_status = models.Contract.objects.get(pk=self.user_contract.pk).status
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(new_status, ContractStatuses.ACCEPTED)
 
     def test_user_can_change_contract(self):
@@ -155,7 +163,7 @@ class ContractDetailViewTest(BaseContractTests):
         response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/", {"contract":"{}"})
         new_contract = models.Contract.objects.get(pk=self.user_contract.pk)
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(new_contract.status, ContractStatuses.WAITING_ADMIN)
         self.assertEqual(new_contract.contract, {})
 
@@ -170,7 +178,7 @@ class ContractDetailViewTest(BaseContractTests):
         response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/", {"status":""})
         new_status = models.Contract.objects.get(pk=self.user_contract.pk).status
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(new_status, ContractStatuses.ACCEPTED)
 
     def test_admin_can_change_contract(self):
@@ -184,11 +192,9 @@ class ContractDetailViewTest(BaseContractTests):
         response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/", {"contract":"{}"})
         new_contract = models.Contract.objects.get(pk=self.user_contract.pk)
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(new_contract.status, ContractStatuses.WAITING_USER)
         self.assertEqual(new_contract.contract, {})
-
-    """Проверка на то что был передан и статус и контракт"""
 
     def test_cannot_update_contract_and_status_at_the_same_time(self):
         """
@@ -202,7 +208,7 @@ class ContractDetailViewTest(BaseContractTests):
         response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/", {"contract":"{}", "status":""})
         new_contract = models.Contract.objects.get(pk=self.user_contract.pk)
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(new_contract.status, ContractStatuses.WAITING_USER)
         self.assertEqual(new_contract.contract, {})
 
@@ -215,6 +221,141 @@ class ContractDetailViewTest(BaseContractTests):
         response = self.client.patch(f"/api/contracts/{self.user_contract.pk}/", {"contract":"{}", "status":""})
         new_contract = models.Contract.objects.get(pk=self.user_contract.pk)
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(new_contract.status, ContractStatuses.WAITING_ADMIN)
         self.assertEqual(new_contract.contract, {})
+
+
+class ContractDetailCreateViewTest(BaseContractTests):
+    """
+    Checks whether contracts are being created
+    """
+
+    def test_contract_created(self):
+        """
+        Contracts are created and saved to db
+        """
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post("/api/contracts/", {
+            "name": "preview",
+            "counterparty": self.admin.pk,
+            "template": self.general_template.pk
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNotNone(response.data["contract"])
+        self.assertEqual(models.Contract.objects.count(), 3)
+
+    def test_returns_actual_contract(self):
+        """
+        Contract in response equal to contract in db
+        """
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post("/api/contracts/", {
+            "name": "preview",
+            "counterparty": self.admin.pk,
+            "template": self.general_template.pk
+        })
+
+        saved_contract = models.Contract.objects.get(pk=response.data["id"])
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["contract"], saved_contract.contract)
+
+    def test_was_formed_right(self):
+        """
+        Contract in response was formed right
+        is it looks like predefined contract in fixtures,
+        that was formed with the same kwargs
+        """
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post("/api/contracts/", {
+            "name": "preview",
+            "counterparty": self.admin.pk,
+            "template": self.general_template.pk
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["contract"], self.user_contract.contract)
+
+
+class ContractPreviewTests(BaseContractTests):
+    """
+    Checks whether contract previews are being created
+    """
+
+    def test_preview_creates_not_saved(self):
+        """
+        Previews was created and not saved to db
+        """
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post("/api/contracts/preview/", {
+            "name": "preview",
+            "counterparty": self.admin.pk,
+            "template": self.general_template.pk
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNotNone(response.data["contract"])
+        self.assertEqual(models.Contract.objects.count(), 2)
+
+    def test_was_formed_right(self):
+        """
+        Contract in response was formed right
+        is it looks like predefined contract in fixtures,
+        that was formed with the same kwargs
+        """
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post("/api/contracts/preview/", {
+            "name": "preview",
+            "counterparty": self.admin.pk,
+            "template": self.general_template.pk
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["contract"], self.user_contract.contract)
+
+
+class ContractSaveTests(BaseContractTests):
+    """
+    Checks whether passed to save contract previews are being saved
+    """
+
+    def test_contract_saves(self):
+        """
+        Preview saves to db after calling contracts/save/
+        """
+        contract = json.dumps({"A": "B"})
+        contract_json = json.loads(contract)
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post("/api/contracts/save/", {
+            "name": "preview",
+            "counterparty": self.admin.pk,
+            "template": self.general_template.pk,
+            "contract": contract
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["contract"], contract_json)
+
+        saved_contract = models.Contract.objects.get(pk=response.data["id"])
+        self.assertEqual(saved_contract.contract, contract_json)
+
+    def test_returns_actual_contract(self):
+        """
+        Contract in response after save equal to contract in db
+        """
+        contract = json.dumps({"A": "B"})
+        contract_json = json.loads(contract)
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post("/api/contracts/save/", {
+            "name": "preview",
+            "counterparty": self.admin.pk,
+            "template": self.general_template.pk,
+            "contract": contract
+        })
+
+        saved_contract = models.Contract.objects.get(pk=response.data["id"])
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["contract"], saved_contract.contract)
