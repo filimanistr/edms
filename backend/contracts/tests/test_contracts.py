@@ -1,13 +1,11 @@
 from rest_framework.test import APITestCase
-from rest_framework.test import force_authenticate, APIRequestFactory
-from rest_framework.authtoken.models import Token
 from rest_framework import status
 import json
 
 from accounts.models import User
 from contracts.models import Contract, ServicesReference, ContractTemplate
 
-from contracts import models, views
+from contracts import models
 from contracts.config import ContractStatuses
 
 
@@ -34,8 +32,7 @@ class ContractListViewTests(BaseContractTests):
         """
         self.client.force_authenticate(user=self.user)
         response = self.client.get("/api/contracts/")
-        # response_contracts_ids = [i["id"] for i in response.data["results"]]
-        response_contracts_ids = [i["id"] for i in response.data]
+        response_contracts_ids = [i["id"] for i in response.data["results"]]
         user_contracts_ids = [i.pk for i in [self.user_contract]]
 
         self.assertEqual(response.status_code, 200)
@@ -48,8 +45,7 @@ class ContractListViewTests(BaseContractTests):
         all_contracts = [self.user_contract, self.another_user_contract]
         self.client.force_authenticate(user=self.admin)
         response = self.client.get("/api/contracts/")
-        # response_contracts_ids = [i["id"] for i in response.data["results"]]
-        response_contracts_ids = [i["id"] for i in response.data]
+        response_contracts_ids = [i["id"] for i in response.data["results"]]
         all_contracts_ids = [i.pk for i in all_contracts]
 
         self.assertEqual(response.status_code, 200)
@@ -74,7 +70,7 @@ class ContractListViewTests(BaseContractTests):
 
 class ContractDetailAccessViewTest(BaseContractTests):
     """
-    Checks whether the contract can be accesssed and updated by users
+    Checks whether the contract can be accessed and updated by users
     """
 
     def test_cannot_access_not_his_contract(self):

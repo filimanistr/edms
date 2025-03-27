@@ -1,12 +1,8 @@
 from rest_framework.test import APITestCase
-from rest_framework.test import force_authenticate, APIRequestFactory
-from rest_framework.authtoken.models import Token
 from rest_framework import status
 
-from accounts.models import User
 from contracts.models import ServicesReference, ContractTemplate
-from contracts import models, views
-from contracts.config import ContractStatuses
+from accounts.models import User
 
 
 class BaseContractTests(APITestCase):
@@ -106,7 +102,7 @@ class TemplatesListViewTests(BaseContractTests):
         """
         self.client.force_authenticate(user=self.user)
         response = self.client.get("/api/templates/")
-        response_templates_ids = [i["id"] for i in response.data["data"]]
+        response_templates_ids = [i["id"] for i in response.data["results"]]
         general_and_user_templates_ids = [i.pk for i in [self.general_template, self.user_template]]
 
         self.assertEqual(response.status_code, 200)
@@ -119,7 +115,7 @@ class TemplatesListViewTests(BaseContractTests):
         all_templates = [self.general_template, self.user_template, self.another_user_template]
         self.client.force_authenticate(user=self.admin)
         response = self.client.get("/api/templates/")
-        response_templates_ids = [i["id"] for i in response.data["data"]]
+        response_templates_ids = [i["id"] for i in response.data["results"]]
         all_templates_ids = [i.pk for i in all_templates]
 
         self.assertEqual(response.status_code, 200)
