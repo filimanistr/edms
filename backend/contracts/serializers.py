@@ -1,11 +1,11 @@
 from rest_framework import serializers
-from rest_framework.exceptions import APIException
 from django.utils import timezone
 
 from accounts.models import User
-from .config import ADMINS, COUNTERPARTY_NOT_SELECTED, ContractStatuses, TEMPLATE_EXIST, CANT_EDIT_GENERAL_TEMPLATE
-from .services import get_key_fields, form_contract, get_bank_info, update_status
+from .config import ADMINS, COUNTERPARTY_NOT_SELECTED, TEMPLATE_EXIST, CANT_EDIT_GENERAL_TEMPLATE, SERVICE_EXIST
+from .services import form_contract, get_bank_info, update_status, Keys
 from .exceptions import AlreadyExistsException, ForbiddenToEditException
+from .config import CONTRACT_EXIST_ADMIN, CONTRACT_EXIST
 from . import models
 
 
@@ -13,38 +13,19 @@ class CounterpartySerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source="id.email")
     password = serializers.CharField(write_only=True)
 
-    FIELDS_TO_CHECK = {
-        "head_first_name": "head_pos_first_name",
-        "head_last_name": "head_pos_last_name",
-        "head_middle_name": "head_pos_middle_name",
-    }
-
     class Meta:
         model = models.Counterparty
         fields = "__all__"
 
-    def validate(self, data):
-        """
-        Проверка на то был ли передан БИК и склонения ФИО с клиента
-
-        TODO: На клиенте происходит склонение ФИО в род. падеж, а так как клиент
-              сейчас один - сайт на js, то реализовать пока на сервере
-              склонение (для других клиентов где нет js) нет смысла.
-              На клиенте потому что попался инструмент хороший :)
-        """
-
-        for key, value in self.FIELDS_TO_CHECK.items():
-            if key in data.keys() and value not in data.keys():
-                # Тут преобразование в род. падеж, надо а ошибку убрать
-                raise serializers.ValidationError("Ко мне не приходит ФИО в р.п. на клиенте ошибка")
-
-        if data.get("BIC") is not None:
-            bank_data = get_bank_info(data["BIC"])
+    def validate(self, attrs):
+        """Проверка на то был ли передан БИК"""
+        if attrs.get("BIC") is not None:
+            bank_data = get_bank_info(attrs["BIC"])
             if bank_data is None:
                 raise serializers.ValidationError("БИК банка не валиден")
-            data.update(bank_data)
+            attrs.update(bank_data)
 
-        return data
+        return attrs
 
     def create(self, validated_data):
         user = User.objects.create_user(email=validated_data["id"]["email"], password=validated_data["password"])
@@ -132,29 +113,7 @@ class TemplateSerializer(TemplateBaseSerializer):
 
 
 class ContractBaseSerializer(serializers.ModelSerializer):
-    """
-    Информация о всех контрактах
-
-    сюда не включается сам контракт т.к. он может быть большим
-    сюда не включаются данные контрагентов
-
-    приходится выполнять второй запрос на получение подробной
-    информации о конкретном, одном договоре
-
-    От клиента принимает на вход поля: counterparty и template,
-    возвращаются четыре поля что ниже:
-    """
-    counterparty = serializers.PrimaryKeyRelatedField(
-        queryset=models.Counterparty.objects.all(),
-        write_only=True,
-        allow_null=True
-    )
-
-    template = serializers.PrimaryKeyRelatedField(
-        queryset=models.ContractTemplate.objects.select_related("service").all(),
-        write_only=True
-    )
-
+    """Returns only essential parts about contracts, used mostly for list"""
     template__id = serializers.IntegerField(source='template.pk', read_only=True)
     template__name = serializers.CharField(source='template.name', read_only=True)
     counterparty__id = serializers.IntegerField(source='counterparty.pk', read_only=True)
@@ -164,11 +123,7 @@ class ContractBaseSerializer(serializers.ModelSerializer):
         model = models.Contract
         fields = [
             "id",
-
             "name",
-            "counterparty",
-            "template",
-
             "counterparty__id",
             "counterparty__name",
             "template__id",
@@ -177,129 +132,40 @@ class ContractBaseSerializer(serializers.ModelSerializer):
             "year",
         ]
         read_only_fields = [
-            # in output only
-            "id",
-            "counterparty__id",
-            "counterparty__name",
-            "template__id",
-            "template__name",
-            "status",
-            "year",
+            *fields
         ]
 
-    def validate(self, data):
-        if self.context.get("request") is None:
-            raise serializers.ValidationError("Need to pass request object to context")
-        return data
 
-    def validate_counterparty(self, value):
-        """
-        Клиент может кидать в counterparty None, если это заказчик.
-        Происходит проверка на то заказчик ли это если там None
-        """
-        if value is None:
-            if self.context["request"].user.email in ADMINS:
-                raise serializers.ValidationError(COUNTERPARTY_NOT_SELECTED)
-            # Если контракт создает не админ, а заказчик, то контрагентом будет он же
-            return self.context["request"].user.counterparty
-        return value
-
-
-class ContractDetailSerializer(ContractBaseSerializer):
-    """
-    Информация о конкретном, одном договоре + новые данные
-    входные данные те же
-
-    Помимо информации о договоре возвращает поле `contract` и `keys`
-    поле `keys` содержит информацию о контрагентах, что полезно
-    при составлении договора (имеется быстрый доступ к информации)
-
-    Так, после получения контракта не надо второй раз кидать
-    запрос на сервер для получения информации еще и контрагентах.
-    Все в пределах одного запроса
-    """
-    keys = serializers.SerializerMethodField()
-    status = serializers.EmailField(allow_null=True, allow_blank=True)
+class ContractDetailsBaseSerializer(ContractBaseSerializer):
+    """Returns detailed info about contract; all fields still readonly"""
+    service__name = serializers.IntegerField(source='service.name', read_only=True)
+    service__price = serializers.IntegerField(source='service.price', read_only=True)
+    service__year = serializers.IntegerField(source='service.year', read_only=True)
+    contract = serializers.JSONField(read_only=True)
 
     class Meta(ContractBaseSerializer.Meta):
         fields = ContractBaseSerializer.Meta.fields + [
-            # + контракт и статус в input
+            "service__name",
+            "service__price",
+            "service__year",
             "contract",
-            "keys",
         ]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._key_fields = None
-        self._contract = None
 
-    def get_keys(self, obj):
-        """Возвращает данные исполнителя и заказчика в поле keys"""
-        if self._key_fields is not None:
-            return self._key_fields
-
-        if not isinstance(obj, models.Contract):
-            obj = models.Contract(**obj)
-
-        admin_data = models.Counterparty.objects.get(id__email__in=ADMINS)
-        self._key_fields = get_key_fields(obj.name,
-                                          obj.template.service,
-                                          obj.counterparty,
-                                          admin_data)
-        return self._key_fields
-
-    def _get_contract(self, obj):
-        """Создает договор из шаблона, без сохранения его в базу данных"""
-        if self._contract is not None:
-            return self._contract
-
-        if not isinstance(obj, models.Contract):
-            obj = models.Contract(**obj)
-
-        self._contract = form_contract(obj.template.template, self.get_keys(obj))
-        return self._contract
-
-    def create(self, validated_data):
-        """
-        Создает новый договор, формируя его из шаблона и сохраняет в БД
-        """
-        if self.context["request"].user.email not in ADMINS:
-            status = "ожидает согласования поставщиком"
-        else:
-            status = "ожидает согласования заказчиком"
-
-        contract = validated_data.get("contract")
-        print("CONTRACT: ", contract)
-        if not contract:
-            print("CONTRACT: ", not contract)
-            contract = self._get_contract(validated_data)
-
-        instance, created = models.Contract.objects.get_or_create(
-            name=validated_data["name"],
-            counterparty=validated_data["counterparty"],
-            defaults={
-                "template": validated_data["template"],
-                "contract": contract,
-                "year": timezone.now().year,
-                "status": status
-            }
-        )
-
-        self.get_keys(validated_data)
-        instance.created = created
-        if not created:
-            return instance
-        return instance
+class ContractUpdateSerializer(ContractDetailsBaseSerializer):
+    """Updates contract or it's status, depends on was it passed"""
+    contract = serializers.JSONField(read_only=False)
 
     def update(self, instance, validated_data):
+        """Field other than `contract` is ignored"""
         is_admin = self.context["request"].user.email in ADMINS
         contract = validated_data.get("contract", instance.contract)
         changed = contract is not instance.contract
-        status = update_status(instance.status, is_admin, changed)
 
-        keys = validated_data.keys()
-        if "contract" not in keys and "status" not in keys:
-            raise Exception("Изменение чего-либо кроме статуса и договора не возможно")
+        try:
+            status = update_status(instance.status, is_admin, changed)
+        except Exception as e:
+            raise serializers.ValidationError(e)
 
         instance.status = status
         instance.contract = contract
@@ -307,7 +173,80 @@ class ContractDetailSerializer(ContractBaseSerializer):
         return instance
 
 
-"""Services"""
+class ContractCreationSerializer(ContractDetailsBaseSerializer):
+    """Creates new contract from specified fields"""
+    name = serializers.CharField(read_only=False)
+
+    class Meta(ContractDetailsBaseSerializer.Meta):
+        fields = ContractDetailsBaseSerializer.Meta.fields + [
+            "counterparty",
+            "template",
+        ]
+        extra_kwargs = {
+            "counterparty": {"write_only": True},
+            "template": {"write_only": True},
+        }
+
+    def validate_counterparty(self, value):
+        """Ignore `counterparty` field if client set it
+        Client is counterparty if he creates contract"""
+        if self.context["request"].user.email in ADMINS:
+            if value is not None: return value
+            raise serializers.ValidationError(COUNTERPARTY_NOT_SELECTED)
+        return self.context["request"].user.counterparty
+
+    @property
+    def new_status(self):
+        if self.context["request"].user.email in ADMINS:
+            return "ожидает согласования поставщиком"
+        return "ожидает согласования заказчиком"
+
+    def get_contract(self, obj):
+        return form_contract(obj["template"].template, Keys(
+            obj["name"],
+            obj["template"].service.name,
+            obj["template"].service.price,
+            obj["template"].service.year,
+            models.Counterparty.objects.get(id__email__in=ADMINS),
+            obj["counterparty"]
+        ))
+
+    def create(self, validated_data):
+        instance, created = models.Contract.objects.get_or_create(
+            name=self.validated_data["name"],
+            counterparty=self.validated_data["counterparty"],
+            defaults={
+                "template": self.validated_data["template"],
+                "contract": self.get_contract(self.validated_data),
+                "year": timezone.now().year,
+                "status": self.new_status
+            }
+        )
+
+        if not created:
+            if self.context["request"].user.email in ADMINS:
+                raise AlreadyExistsException(CONTRACT_EXIST_ADMIN)
+            raise AlreadyExistsException(CONTRACT_EXIST)
+        return instance
+
+
+class ContractPreviewSerializer(ContractCreationSerializer):
+    contract = serializers.SerializerMethodField()
+
+    def save(self):
+        """Don't call `create`"""
+        pass
+
+
+class ContractSaveSerializer(ContractCreationSerializer):
+    contract = serializers.JSONField(read_only=False)
+
+    def get_contract(self, obj):
+        """Don't form new contract"""
+        return self.validated_data["contract"]
+
+
+"""SERVICES"""
 
 
 class ServiceSerializer(serializers.ModelSerializer):
@@ -324,5 +263,8 @@ class ServiceSerializer(serializers.ModelSerializer):
                 "year": validated_data["year"]
             }
         )
-        instance.created = created
+
+        if not created:
+            raise serializers.ValidationError(SERVICE_EXIST)
+
         return instance

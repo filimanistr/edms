@@ -1,5 +1,6 @@
-﻿from django.forms.models import model_to_dict
+from django.forms.models import model_to_dict
 
+from dataclasses import dataclass
 import xml.etree.ElementTree as ET
 
 from .models import ContractTemplate, Counterparty, ServicesReference
@@ -32,22 +33,18 @@ def get_bank_info(bic: str):
     return {"bank_name": name["NameP"], "correspondent_account": ca["Account"]}
 
 
-def get_key_fields(contract_name: str,
-                   service: ServicesReference,
-                   user_data: Counterparty,
-                   admin_data: Counterparty) -> dict:
-    """Collects dict of key fields for contract forming"""
-    return {
-        "contract__name": contract_name,
-        "service__name": service.name,
-        "service__price": str(service.price),
-        "service__year": str(service.year),
-        "исп": model_to_dict(admin_data),
-        "зак": model_to_dict(user_data)
-    }
+@dataclass
+class Keys:
+    """Forms contracts"""
+    contract__name: str
+    service__name: str
+    service__price: str
+    service__year: str
+    contractor: Counterparty
+    client: Counterparty
 
 
-def form_contract(template: dict, data: dict) -> dict:
+def form_contract(template: dict, data: Keys) -> dict:
     """Creates contract from a template by inserting `data` to it"""
 
     def replace_text(node):
@@ -56,14 +53,14 @@ def form_contract(template: dict, data: dict) -> dict:
                 if key == 'text' and node.get("backgroundColor") == "#FEFF00":
                     text = value.lower().strip()
                     if text in config.CONTRACT_KEY_FIELDS.keys():
-                        node["text"] = str(data[config.CONTRACT_KEY_FIELDS[text]])
+                        node["text"] = str(getattr(data, config.CONTRACT_KEY_FIELDS[text]))
                         node["backgroundColor"] = ""
                         continue
 
                     field = text.rsplit(' ', 1)[0]
                     if field in config.COUNTERPARTY_KEY_FIELDS.keys():
                         prefix = text.split()[-1]
-                        node["text"] = str(data[prefix][config.COUNTERPARTY_KEY_FIELDS[field]])
+                        node["text"] = str(getattr(getattr(data, prefix), config.COUNTERPARTY_KEY_FIELDS[field]))
                         node["backgroundColor"] = ""
                 else:
                     replace_text(value)

@@ -8,6 +8,7 @@ from rest_framework import status
 from rest_framework import generics
 from rest_framework import permissions
 
+from contracts.config import ADMINS
 from contracts.serializers import CounterpartySerializer
 from contracts.models import Counterparty
 from .models import User
@@ -38,7 +39,8 @@ def login(request):
 
     response = Response()
     response.data = {
-        "token": token.key
+        "token": token.key,
+        "is_admin": user.email in ADMINS
     }
 
     return response
@@ -64,7 +66,10 @@ class CreateUserView(generics.CreateAPIView):
                 return Response({"message": "Почта уже занята", "description": "Измените почту"},
                                 status=status.HTTP_400_BAD_REQUEST)
             token, created = Token.objects.get_or_create(user=instance.id)
-            return Response({'token': token.key}, status=201)
+            return Response({
+                'token': token.key,
+                "is_admin": instance.id.email in ADMINS
+            }, status=201)
 
         error = serializer.errors
         if "non_field_errors" in serializer.errors:
@@ -72,4 +77,3 @@ class CreateUserView(generics.CreateAPIView):
 
         return Response({"message": error},
                         status=status.HTTP_400_BAD_REQUEST)
-

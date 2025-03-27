@@ -4,9 +4,9 @@ from .models import Counterparty
 from .config import ADMINS
 
 
-class templatesFilter(filters.BaseFilterBackend):
+class TemplatesFilter(filters.BaseFilterBackend):
     """
-    Фильтрует так что заказчикам отображаются только их и общие шаблоны
+    Users only get their and general templates
     """
     def filter_queryset(self, request, queryset, view):
         if request.user.email in ADMINS:
@@ -15,11 +15,18 @@ class templatesFilter(filters.BaseFilterBackend):
         return queryset.filter(creator__in=(request.user.counterparty, admin))
 
 
-class contractsFilter(filters.BaseFilterBackend):
+class ContractsFilter(filters.BaseFilterBackend):
     """
-    Фильтрует так что заказчикам отображаются только их договора
+    Users get only their contracts
     """
     def filter_queryset(self, request, queryset, view):
         if request.user.email in ADMINS:
             return queryset
         return queryset.filter(counterparty__pk=request.user.pk)
+
+
+class CounterpartiesFilter(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        if request.user.email in ADMINS:
+            return queryset.exclude(id__email__in=ADMINS)
+        return queryset.filter(counterparty__pk__in=[*ADMINS, request.user])
