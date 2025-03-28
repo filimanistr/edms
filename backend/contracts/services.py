@@ -104,7 +104,7 @@ def get_fields() -> dict:
     Возвращает список всех контрагентов, шаблонов и услуг,
     необходимо на view слое отсекать counterparties из вывода этой функции для заказчиков
     """
-    counterparties = Counterparty.objects.exclude(id__email__in=config.ADMINS).values("id", "name")
+    counterparties = Counterparty.objects.exclude(id__is_admin=True).values("id", "name")
     services = ServicesReference.objects.values("id", "name")
     templates = ContractTemplate.objects.values("id", "name", "service")
 

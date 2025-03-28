@@ -6,7 +6,6 @@ from rest_framework import generics
 from .permissions import IsAdminCreating, IsAdminUser, IsContractOwner
 
 from . import filters
-from . import models
 from .serializers import *
 from .services import get_fields
 
@@ -50,7 +49,7 @@ class ContractCreationFields(APIView):
 
     def get(self, request, format=None):
         fields = get_fields()
-        if request.user.email not in ADMINS:
+        if not request.user.is_admin:
             fields["counterparties"] = None
         return Response(fields)
 
@@ -78,7 +77,7 @@ class AdminCounterpartyDetail(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        return models.Counterparty.objects.get(id__email__in=ADMINS)
+        return models.Counterparty.objects.get(id__is_admin=True)
 
 
 class CurrentCounterpartyDetail(generics.RetrieveUpdateAPIView):

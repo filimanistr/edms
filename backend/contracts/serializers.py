@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.utils import timezone
 
 from accounts.models import User
-from .config import ADMINS, COUNTERPARTY_NOT_SELECTED, TEMPLATE_EXIST, CANT_EDIT_GENERAL_TEMPLATE, SERVICE_EXIST
+from .config import COUNTERPARTY_NOT_SELECTED, TEMPLATE_EXIST, CANT_EDIT_GENERAL_TEMPLATE, SERVICE_EXIST
 from .services import form_contract, get_bank_info, update_status, Keys
 from .exceptions import AlreadyExistsException, ForbiddenToEditException
 from .config import CONTRACT_EXIST_ADMIN, CONTRACT_EXIST
@@ -101,7 +101,7 @@ class TemplateSerializer(TemplateBaseSerializer):
     def update(self, instance, validated_data):
         # Найти бы место по лучше для этой проверки
         user = self.context["request"].user
-        if user.email not in ADMINS and instance.creator.id.email in ADMINS:
+        if not user.is_admin and instance.creator.id.is_admin:
             raise ForbiddenToEditException(CANT_EDIT_GENERAL_TEMPLATE)
 
         instance.template = validated_data.get("template", instance.template)
@@ -158,7 +158,7 @@ class ContractUpdateSerializer(ContractDetailsBaseSerializer):
 
     def update(self, instance, validated_data):
         """Field other than `contract` is ignored"""
-        is_admin = self.context["request"].user.email in ADMINS
+        is_admin = self.context["request"].user.is_admin
         contract = validated_data.get("contract", instance.contract)
         changed = contract is not instance.contract
 
@@ -190,14 +190,14 @@ class ContractCreationSerializer(ContractDetailsBaseSerializer):
     def validate_counterparty(self, value):
         """Ignore `counterparty` field if client set it
         Client is counterparty if he creates contract"""
-        if self.context["request"].user.email in ADMINS:
+        if self.context["request"].user.is_admin:
             if value is not None: return value
             raise serializers.ValidationError(COUNTERPARTY_NOT_SELECTED)
         return self.context["request"].user.counterparty
 
     @property
     def new_status(self):
-        if self.context["request"].user.email in ADMINS:
+        if self.context["request"].user.is_admin:
             return "ожидает согласования поставщиком"
         return "ожидает согласования заказчиком"
 
@@ -207,7 +207,7 @@ class ContractCreationSerializer(ContractDetailsBaseSerializer):
             obj["template"].service.name,
             obj["template"].service.price,
             obj["template"].service.year,
-            models.Counterparty.objects.get(id__email__in=ADMINS),
+            models.Counterparty.objects.get(id__is_admin=True),
             obj["counterparty"]
         ))
 
@@ -224,7 +224,7 @@ class ContractCreationSerializer(ContractDetailsBaseSerializer):
         )
 
         if not created:
-            if self.context["request"].user.email in ADMINS:
+            if self.context["request"].user.is_admin:
                 raise AlreadyExistsException(CONTRACT_EXIST_ADMIN)
             raise AlreadyExistsException(CONTRACT_EXIST)
         return instance

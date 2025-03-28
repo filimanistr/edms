@@ -8,7 +8,6 @@ from rest_framework import status
 from rest_framework import generics
 from rest_framework import permissions
 
-from contracts.config import ADMINS
 from contracts.serializers import CounterpartySerializer
 from contracts.models import Counterparty
 from .models import User
@@ -28,10 +27,6 @@ def login(request):
     if not user.check_password(password):
         raise AuthenticationFailed("Неверный пароль")
 
-    payload = {
-        'id': user.id
-    }
-
     try:
         token = Token.objects.create(user=user)
     except IntegrityError:
@@ -40,7 +35,7 @@ def login(request):
     response = Response()
     response.data = {
         "token": token.key,
-        "is_admin": user.email in ADMINS
+        "is_admin": user.is_admin
     }
 
     return response
@@ -68,7 +63,7 @@ class CreateUserView(generics.CreateAPIView):
             token, created = Token.objects.get_or_create(user=instance.id)
             return Response({
                 'token': token.key,
-                "is_admin": instance.id.email in ADMINS
+                "is_admin": instance.id.is_admin
             }, status=201)
 
         error = serializer.errors

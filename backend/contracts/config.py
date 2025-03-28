@@ -1,7 +1,5 @@
-﻿import os
-
-# Messages
-# to be returned to client
+﻿
+# response messages
 
 SERVICE_EXIST = {
     "success": False,
@@ -36,9 +34,7 @@ CONTRACT_DOES_NOT_EXIST = {
 # to be returned to console inside
 
 COUNTERPARTY_NOT_SELECTED = "Не был выбран заказчик с которым создается договор"
-
 CANT_EDIT_GENERAL_TEMPLATE = "Вы не можете изменять общий шаблон"
-
 CANT_EDIT_ACCEPTED_CONTRACT = "Вы не можете изменить согласованный договор"
 CANT_EDIT_BY_ADMIN = "Вы не можете изменить этот договор, ожидает согласование заказчиком"
 CANT_EDIT_BY_USER = "Вы не можете изменить этот договор, ожидает согласование поставщиком"
@@ -51,8 +47,6 @@ class ContractStatuses:
     WAITING_ADMIN = "ожидает согласования поставщиком"
     ACCEPTED = "согласован"
 
-
-ADMINS = (os.getenv("EMAIL"), )
 
 CONTRACT_KEY_FIELDS = {
     "название договора": "contract__name",
