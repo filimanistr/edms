@@ -27,6 +27,9 @@ def login(request):
     if not user.check_password(password):
         raise AuthenticationFailed("Неверный пароль")
 
+    if not hasattr(user, "counterparty"):
+        raise AuthenticationFailed("Завершите инициализацию")
+
     try:
         token = Token.objects.create(user=user)
     except IntegrityError:
@@ -48,27 +51,5 @@ class Logout(APIView):
 
 
 class CreateUserView(generics.CreateAPIView):
-    permission_classes = [permissions.AllowAny]
-    model = Counterparty
     serializer_class = CounterpartySerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data, partial=True)
-        if serializer.is_valid():
-            try:
-                instance = serializer.save()
-            except IntegrityError:
-                return Response({"message": "Почта уже занята", "description": "Измените почту"},
-                                status=status.HTTP_400_BAD_REQUEST)
-            token, created = Token.objects.get_or_create(user=instance.id)
-            return Response({
-                'token': token.key,
-                "is_admin": instance.id.is_admin
-            }, status=201)
-
-        error = serializer.errors
-        if "non_field_errors" in serializer.errors:
-            error = serializer.errors["non_field_errors"][0].title()
-
-        return Response({"message": error},
-                        status=status.HTTP_400_BAD_REQUEST)
+    permission_classes = [permissions.AllowAny]

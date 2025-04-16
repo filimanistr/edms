@@ -1,34 +1,86 @@
+from functools import cached_property
+
 from rest_framework import serializers
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from accounts.models import User
 from .config import COUNTERPARTY_NOT_SELECTED, TEMPLATE_EXIST, CANT_EDIT_GENERAL_TEMPLATE, SERVICE_EXIST
 from .services import form_contract, get_bank_info, update_status, Keys
 from .exceptions import AlreadyExistsException, ForbiddenToEditException
-from .config import CONTRACT_EXIST_ADMIN, CONTRACT_EXIST
+from .config import CONTRACT_EXIST_ADMIN, CONTRACT_EXIST, EMAIL_EXISTS, NOT_CONFIGURED, CHANGE_PASSWORD, NOT_VALID_BIC
 from . import models
 
 
 class CounterpartySerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(source="id.email")
+    email = serializers.EmailField(source="id.email", write_only=True)
     password = serializers.CharField(write_only=True)
+    token = serializers.SerializerMethodField(read_only=True)
+    is_admin = serializers.BooleanField(source="id.is_admin", read_only=True)
 
     class Meta:
         model = models.Counterparty
-        fields = "__all__"
+        extra_kwargs = {
+            "name": {"write_only": True},
+            "full_name": {"write_only": True},
+            "INN": {"write_only": True},
+            "KPP": {"write_only": True},
+            "bank_name": {"write_only": True},
+            "BIC": {"write_only": True},
+            "correspondent_account": {"write_only": True},
+            "head_first_name": {"write_only": True},
+            "head_last_name": {"write_only": True},
+            "head_middle_name": {"write_only": True},
+            "reason": {"write_only": True},
+        }
+        exclude = (
+            "id",
+            "checking_account",
+            "personal_account",
+            "head_pos_first_name",
+            "head_pos_last_name",
+            "head_pos_middle_name"
+        )
+
+    @cached_property
+    def admin_user(self):
+        return get_user_model().objects.get(is_admin=True)
+
+    @cached_property
+    def counterparties_exists(self):
+        return models.Counterparty.objects.exists()
+
+    def validate_BIC(self, value):
+        if get_bank_info(value) is None:
+            raise serializers.ValidationError(NOT_VALID_BIC)
+        return value
+
+    def validate_email(self, value):
+        if not self.counterparties_exists and value != self.admin_user.email:
+            raise serializers.ValidationError(NOT_CONFIGURED)
+        if self.counterparties_exists and get_user_model().objects.filter(email=value).exists():
+            raise serializers.ValidationError(EMAIL_EXISTS)
+        return value
 
     def validate(self, attrs):
-        """Проверка на то был ли передан БИК"""
-        if attrs.get("BIC") is not None:
-            bank_data = get_bank_info(attrs["BIC"])
-            if bank_data is None:
-                raise serializers.ValidationError("БИК банка не валиден")
-            attrs.update(bank_data)
-
+        # TODO: ask for specified password and change it later as he enters
+        if not self.counterparties_exists and attrs["id"]["email"] == self.admin_user.email:
+            if self.admin_user.check_password(attrs["password"]):
+                raise serializers.ValidationError({"password": CHANGE_PASSWORD})
         return attrs
 
+    def get_token(self, obj):
+        token, _ = Token.objects.get_or_create(user=obj.id)
+        return token.key
+
     def create(self, validated_data):
-        user = User.objects.create_user(email=validated_data["id"]["email"], password=validated_data["password"])
+        user, _ = get_user_model().objects.get_or_create(
+            email=validated_data["id"]["email"],
+            defaults={"password": validated_data["password"]})
+
+        if not self.counterparties_exists:
+            user.set_password(validated_data["password"])
+            user.save()
         counterparty_data = {key: value for key, value in validated_data.items() if key not in ("id", "password")}
         return models.Counterparty.objects.create(id=user, **counterparty_data)
 

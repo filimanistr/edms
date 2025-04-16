@@ -1,5 +1,15 @@
 ﻿
 # response messages
+# TODO: выкинуть в json и по категориям ERRORS, MESSAGES
+
+NOT_CONFIGURED = "Система не инициализирована"
+CHANGE_PASSWORD = "Необходимо изменить пароль"
+NOT_VALID_BIC = "БИК банка не валиден"
+
+EMAIL_EXISTS = {
+    "message": "Почта уже занята",
+    "description": "Измените почту"
+}
 
 SERVICE_EXIST = {
     "success": False,
