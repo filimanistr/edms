@@ -1,16 +1,37 @@
-FROM node:18-alpine
-WORKDIR /app/frontend
+FROM node:23-alpine3.21 as base
 
-# Install dependencies
-COPY package.json package-lock.json ./
-RUN npm ci
+WORKDIR /app
 
-COPY . .
 
-# Next.js collects completely anonymous telemetry data about general usage.
+# Throw-away build stage to reduce size of final image
+FROM base AS build
+
+# Install packages needed to build node modules
+RUN apk -U add build-base gyp pkgconfig python3
+
+# Install node modules
+COPY --link package-lock.json package.json ./
+RUN npm ci --include=dev
+
+# Copy application code
+COPY --link . .
+
 # Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line to disable telemetry at run time
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# Start Next.js in development mode
-CMD ["npm", "run", "dev"]
+RUN npx update-browserslist-db@latest
+
+# Build application
+RUN npm run build
+
+# Remove development dependencies
+RUN npm prune --omit=dev
+
+
+FROM base AS run
+
+# Copy standalone app
+COPY --from=build /app/.next/standalone /app
+COPY --from=build /app/.next/static /app/.next/static
+
+CMD [ "node", "server.js" ]
